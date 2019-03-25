@@ -3,6 +3,7 @@ package practica_busqueda;
 import core.game.StateObservation;
 import ontology.Types;
 import tools.ElapsedCpuTimer;
+import tools.PathFinder;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -15,9 +16,18 @@ public class Agent extends BaseAgent{
 
         ArrayList<Integer> tiposObs = new ArrayList<Integer>();
 
-        for (ArrayList<Observation>; ; ) {
-
+        for (ArrayList<Observation> obs: obstaculos) {
+            tiposObs.add(obs.get(0).obsID);
         }
+
+        pf = new PathFinder(tiposObs);
+        pf.VERBOSE = false;
+
+        pf.run(stateObs);
+
+        fescala = new Vector2d((double) stateObs.getWorldDimesion().width / stateObs.getObservationGrid().length, (double) stateObs.getWorldDimesion().height / stateObs.getObservationGrid()[0].length);
+
+        ultimaPos = new Vector2d(stateObs.getAvatarPosition().x / fescala.x, stateObs.getAvatarPosition().y / fescala.y);
     }
 
     public Types.ACTIONS act (StateObservation stateObs , ElapsedCpuTimer elapsedTimer){
@@ -85,7 +95,6 @@ public class Agent extends BaseAgent{
       }else{
         return Types.ACTIONS.ACTION_NIL;
       }
-
 
     }
 }
