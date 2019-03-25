@@ -16,7 +16,7 @@ public class Agent extends BaseAgent{
         ArrayList<Integer> tiposObs = new ArrayList<Integer>();
 
         for (ArrayList<Observation>; ; ) {
-
+//
         }
     }
 }
