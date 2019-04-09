@@ -57,7 +57,7 @@ public class Agent extends AbstractPlayer {
         if(stateObs.getAvatarResources().isEmpty() != true){
             nGemas = stateObs.getAvatarResources().get(6);
         }
-        stateObs.getAvatarPositio();
+        stateObs.getAvatarPosition();
 
         //Si no hay un plan de ruta calculado...
         if(path.isEmpty()){
@@ -97,21 +97,21 @@ public class Agent extends AbstractPlayer {
         }
 
         if(path != null){
-            Types.aCTIONS siguienteaccion;
+            Types.ACTIONS siguienteaccion;
             Node siguientePos = path.get(0);
 
             //Se determina el siguiente movimiento a partir de la posicion del avatar
             if(siguientePos.position.x != avatar.x){
                 if (siguientePos.position.x > avatar.x) {
-                    siguienteaccion = Types.aCTIONS.aCTION_RIGHT;
+                    siguienteaccion = Types.ACTIONS.ACTION_RIGHT;
                 }else{
-                    siguienteaccion = Types.aCTIONS.aCTION_LEFT;
+                    siguienteaccion = Types.ACTIONS.ACTION_LEFT;
                 }
             }else{
                 if(siguientePos.position.y > avatar.y){
-                    siguienteaccion = Types.aCTIONS.aCTION_DOWN;
+                    siguienteaccion = Types.ACTIONS.ACTION_DOWN;
                 }else{
-                    siguienteaccion = Types.aCTIONS.aCTION_UP;
+                    siguienteaccion = Types.ACTIONS.ACTION_UP;
                 }
             }
 
@@ -123,19 +123,19 @@ public class Agent extends AbstractPlayer {
         }
         else{
             //Salida por defecto
-            return Types.aCTIONS.aCTION_NIL;
+            return Types.ACTIONS.ACTION_NIL;
         }
 
     }
 
     private void simularacciones(StateObservation stateObs){
         //Obtenemos la lista de acciones disponible
-        arrayList<Types.aCTIONS> acciones = stateObs.getavailableactions();
+        ArrayList<Types.ACTIONS> acciones = stateObs.getAvailableActions();
 
         //Guardamos la informacion sobre el estado inicial
         StateObservation viejoEstado = stateObs;
 
-        for(Types.aCTIONS accion:acciones){
+        for(Types.ACTIONS accion:acciones){
             //avanzamos el estado tras aplicarle una accion
             viejoEstado.advance(accion);
 
