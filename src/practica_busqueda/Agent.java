@@ -37,15 +37,16 @@ public class Agent extends AbstractPlayer {
 
         //Ultima posicion del avatar
         ultimaPos = new Vector2d(stateObs.getAvatarPosition().x / fescala.x, stateObs.getAvatarPosition().y / fescala.y);
+
+        esPeligrosa(stateObs, ultimaPos);
     }
 
     @Override
     public Types.ACTIONS act(StateObservation stateObs, ElapsedCpuTimer elapsedTimer){
         //Obtenemos la posicion del avatar
         Vector2d avatar =  new Vector2d(stateObs.getAvatarPosition().x / fescala.x, stateObs.getAvatarPosition().y / fescala.y);
-        //System.out.println("Posicion del avatar: " + avatar.toString());
-        //System.out.println("Ultima posicion: " + ultimaPos);
-        //System.out.println("Ultima accion: " + ultimaaccion);
+        System.out.println("Posicion del avatar: " + avatar.toString());
+        System.out.println("Ultima posicion: " + ultimaPos);
 
         //actualizamos el plan de ruta
         if(((avatar.x != ultimaPos.x) || (avatar.y != ultimaPos.y)) && !path.isEmpty()){
@@ -57,7 +58,6 @@ public class Agent extends AbstractPlayer {
         if(stateObs.getAvatarResources().isEmpty() != true){
             nGemas = stateObs.getAvatarResources().get(6);
         }
-        stateObs.getAvatarPosition();
 
         //Si no hay un plan de ruta calculado...
         if(path.isEmpty()){
@@ -118,6 +118,17 @@ public class Agent extends AbstractPlayer {
             //Se actualiza la ultima posicion del avatar
             ultimaPos = avatar;
 
+            // DEBUG Muestra siguiente acción, posición actual, etc
+            System.out.print("Siguiente posicion:");
+            System.out.print(Double.toString(siguientePos.position.x) + ", ");
+            System.out.print(Double.toString(siguientePos.position.y) + "\n");
+
+            // Baja la velocidad para poder ver sus movimientos
+            try{
+                Thread.sleep(50);
+            }
+            catch(Exception e){}
+
             //Se devuelve la accion deseada
             return siguienteaccion;
         }
@@ -126,6 +137,15 @@ public class Agent extends AbstractPlayer {
             return Types.ACTIONS.ACTION_NIL;
         }
 
+    }
+
+    private Boolean esPeligrosa(StateObservation stateObs, Vector2d siguientePos){
+        ArrayList<Observation>[][] grid = stateObs.getObservationGrid();
+        Boolean ground_found = false;
+        // while (!ground_found){
+        // }
+
+        return true;
     }
 
     private void simularacciones(StateObservation stateObs){
