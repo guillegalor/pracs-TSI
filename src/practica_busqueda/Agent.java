@@ -19,6 +19,8 @@ public class Agent extends AbstractPlayer {
     private Vector2d fescala;
     private ArrayList<Node> path  = new ArrayList<>();
     private Vector2d ultimaPos;
+
+    private ArrayList<Observation>[][] grid;
     public Agent(StateObservation stateObs, ElapsedCpuTimer elapsedTimer) {
         //Creamos una lista de IDs de obstaculos
         ArrayList<Integer> tiposObs = new ArrayList();
@@ -38,7 +40,6 @@ public class Agent extends AbstractPlayer {
         //Ultima posicion del avatar
         ultimaPos = new Vector2d(stateObs.getAvatarPosition().x / fescala.x, stateObs.getAvatarPosition().y / fescala.y);
 
-        esPeligrosa(stateObs, ultimaPos);
     }
 
     @Override
@@ -49,8 +50,12 @@ public class Agent extends AbstractPlayer {
         System.out.println("Ultima posicion: " + ultimaPos);
 
         //actualizamos el plan de ruta
+        if(path.size() > 0) //revisar porque esto da Null pointer
+          System.out.print("Path NO vacio.");
+
         if(((avatar.x != ultimaPos.x) || (avatar.y != ultimaPos.y)) && !path.isEmpty()){
-            path.remove(0);
+
+              path.remove(0);
         }
 
         //Calculamos el numero de gemas que lleva encima
@@ -123,11 +128,30 @@ public class Agent extends AbstractPlayer {
             System.out.print(Double.toString(siguientePos.position.x) + ", ");
             System.out.print(Double.toString(siguientePos.position.y) + "\n");
 
+            grid = stateObs.getObservationGrid();
+            int p = esPeligrosa(grid, ultimaPos);
+            if(p > 0){
+              System.out.print("PELIGROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
+              if(p == 1){
+                siguienteaccion = Types.ACTIONS.ACTION_RIGHT;
+                System.out.print("derecha.");
+              }
+
+              if(p == 2){
+                siguienteaccion = Types.ACTIONS.ACTION_LEFT;
+                System.out.print("izquierda.");
+              }
+
+            }
+
+
             // Baja la velocidad para poder ver sus movimientos
+
             try{
                 Thread.sleep(50);
             }
             catch(Exception e){}
+
 
             //Se devuelve la accion deseada
             return siguienteaccion;
@@ -139,13 +163,55 @@ public class Agent extends AbstractPlayer {
 
     }
 
-    private Boolean esPeligrosa(StateObservation stateObs, Vector2d siguientePos){
-        ArrayList<Observation>[][] grid = stateObs.getObservationGrid();
-        Boolean ground_found = false;
-        // while (!ground_found){
-        // }
+    private int esPeligrosa(ArrayList<Observation>[][] grid, Vector2d siguientePos){
 
-        return true;
+        int peligro = 0;
+
+        int x = (int) siguientePos.x;
+        int y = (int) siguientePos.y;
+
+        if( y-2 > 0){
+          ArrayList<Observation> obs1 = grid[x][y-1];
+          ArrayList<Observation> obs2 = grid[x][y-2];
+
+          /*
+          for (int i=0; i < obs1.size() ;i++ ) {
+            System.out.print(obs1.get(i).toString());
+          }
+          */
+
+
+        if(obs1.size() > 0){
+          if((obs1.get(0).itype == 7)){
+              System.out.print("Tiene la roca encima");
+            if( x-1 >= 0){
+              ArrayList<Observation> obsl1 = grid[x-1][y-1];
+              ArrayList<Observation> obsl2 = grid[x-1][y-2];
+              if((obsl1.size() > 0) && (obsl2.size() > 0)){
+                if((obsl1.get(0).itype == 10) ||(obsl2.get(0).itype == 10)){
+                  peligro = 1;
+                }else{
+                  peligro = 2;
+                }
+              }
+
+            }
+
+          }
+        }
+
+
+      }
+
+        /*
+        for(int i=0; i < grid.length; i++){
+          for(int j=0; j < grid[0].length; j++){
+            System.out.print(grid[i][j].toString());
+          }
+        }
+        */
+
+        return peligro;
     }
 
     private void simularacciones(StateObservation stateObs){
