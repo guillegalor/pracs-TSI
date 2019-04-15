@@ -19,6 +19,7 @@ public class Agent extends BaseAgent {
     private Vector2d fescala;
     private ArrayList<Node> path  = new ArrayList<>();
     private Vector2d ultimaPos;
+    private Boolean actualizarmapa = false;
 
     private int nGemas = 0;
 
@@ -68,7 +69,16 @@ public class Agent extends BaseAgent {
             }
         }
 
+        /*
+        if(path == null){
+          posiciones[0].remove(0);
+
+          return Types.ACTIONS.ACTION_LEFT;
+        }
+        */
+
         // Recalcular el camino
+        if(path != null) //da un nul pointer cuando no encuentra camino a la gema mas cercana y EXPLOTA
         if (!path.isEmpty()){
             if ((avatar.x != ultimaPos.x) || (avatar.y != ultimaPos.y))
                 path.remove(0);
@@ -80,12 +90,19 @@ public class Agent extends BaseAgent {
 
         }
 
+        if(actualizarmapa){
+          path.clear();
+          actualizarmapa = false;
+        }
+
+
         //Si no hay un plan de ruta calculado...
         if(path.isEmpty()){
             System.out.print("\nNo hay path");
 
             // Actualizamos el grid que contiene el pathfinder
-            pf.state = stateObs;
+            pf.state = stateObs.copy();
+            pf.grid = grid;
             // Actualizamos los caminos a partir de nuestra posición
             pf.runAll((int) avatar.x, (int) avatar.y);
 
@@ -125,18 +142,29 @@ public class Agent extends BaseAgent {
                 ArrayList<Observation>[] posiciones = stateObs.getResourcesPositions(stateObs.getAvatarPosition());
 
                 //Se selecciona la gema mas cercana
-                gema = posiciones[0].get(0).position;
+                if(path == null){
+                  gema = posiciones[0].get(1).position;
+                  System.out.print("a por otra gema");
+                }
+                else
+                  gema = posiciones[0].get(0).position;
 
                 //Se le aplica el factor de escala para que las coordenas de pixel coincidan con las coordenadas del grig
                 gema.x = gema.x / fescala.x;
                 gema.y = gema.y / fescala.y;
 
+                System.out.print("Gema siguiente:");
+                System.out.print(gema.x);
+                System.out.print(gema.y);
+
                 //Calculamos un camino desde la posicion del avatar a la posicion de la gema
                 path = pf.getPath(avatar, gema);
+
+
             }
         }
 
-        if(path != null){
+          if(!path.isEmpty()){
             Types.ACTIONS siguienteaccion;
             Node siguientePos = path.get(0);
 
@@ -175,6 +203,9 @@ public class Agent extends BaseAgent {
                 }
 
             }
+
+            //Si no s epued emover porque hay una piedra actualiza el mapa
+            actualizarmapa = puedoMoverme(grid, ultimaPos, siguienteaccion);
 
             // Baja la velocidad para poder ver sus movimientos
             try{
@@ -244,6 +275,31 @@ public class Agent extends BaseAgent {
            */
 
         return peligro;
+    }
+
+    /*
+    Mira a ver si el machanguito se puede mover o hay una piedra
+    */
+
+    private Boolean puedoMoverme(ArrayList<Observation>[][] grid, Vector2d posicion, Types.ACTIONS siguiente){
+      Boolean puedomoverme = false;
+      ArrayList<Observation> obs;
+
+      int x = (int) posicion.x;
+      int y = (int) posicion.y;
+
+
+      if(siguiente == Types.ACTIONS.ACTION_LEFT)
+         obs = grid[x-1][y];
+      else
+         obs = grid[x+1][y];
+
+
+      if(obs.size() > 0)
+        if(obs.get(0).itype == 7)
+          puedomoverme = true;
+
+        return puedomoverme;
     }
 
     private void simularacciones(StateObservation stateObs){
