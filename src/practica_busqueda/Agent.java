@@ -13,15 +13,19 @@ import javax.swing.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class Agent extends AbstractPlayer {
+public class Agent extends BaseAgent {
     //Objeto de clase Pathfinder
     private PathFinder pf;
     private Vector2d fescala;
     private ArrayList<Node> path  = new ArrayList<>();
     private Vector2d ultimaPos;
 
+    private int nGemas = 0;
+
     private ArrayList<Observation>[][] grid;
     public Agent(StateObservation stateObs, ElapsedCpuTimer elapsedTimer) {
+        super(stateObs, elapsedTimer);
+
         //Creamos una lista de IDs de obstaculos
         ArrayList<Integer> tiposObs = new ArrayList();
         tiposObs.add(0); //<- Muros
@@ -46,26 +50,57 @@ public class Agent extends AbstractPlayer {
     public Types.ACTIONS act(StateObservation stateObs, ElapsedCpuTimer elapsedTimer){
         //Obtenemos la posicion del avatar
         Vector2d avatar =  new Vector2d(stateObs.getAvatarPosition().x / fescala.x, stateObs.getAvatarPosition().y / fescala.y);
+        System.out.println("\n---------------------");
         System.out.println("Posicion del avatar: " + avatar.toString());
         System.out.println("Ultima posicion: " + ultimaPos);
 
-        //actualizamos el plan de ruta
-        if(path.size() > 0) //revisar porque esto da Null pointer
-          System.out.print("Path NO vacio.");
+        // Actualizamos el grid
+        grid = stateObs.getObservationGrid();
 
-        if(((avatar.x != ultimaPos.x) || (avatar.y != ultimaPos.y)) && !path.isEmpty()){
-
-              path.remove(0);
-        }
+        Boolean gem_catched = false;
 
         //Calculamos el numero de gemas que lleva encima
-        int nGemas = 0;
         if(stateObs.getAvatarResources().isEmpty() != true){
-            nGemas = stateObs.getAvatarResources().get(6);
+            if(nGemas != stateObs.getAvatarResources().get(6)){
+                nGemas++;
+                gem_catched = true;
+                System.out.println("Cogemos una gema");
+            }
+        }
+
+        // Recalcular el camino
+        if (!path.isEmpty()){
+            if ((avatar.x != ultimaPos.x) || (avatar.y != ultimaPos.y))
+                path.remove(0);
+            // Si acabas de coger una gema, elimina el siguiente paso
+            else if (gem_catched){
+                path.remove(0);
+                gem_catched = false;
+            }
+
         }
 
         //Si no hay un plan de ruta calculado...
         if(path.isEmpty()){
+            System.out.print("\nNo hay path");
+
+            // Actualizamos el grid que contiene el pathfinder
+            pf.state = stateObs;
+            // Actualizamos los caminos a partir de nuestra posición
+            pf.runAll((int) avatar.x, (int) avatar.y);
+
+            System.out.println(grid.length);
+            System.out.println(grid[0].length);
+            for(int i = 0; i < grid.length; ++i){
+                System.out.print("\n");
+                for(int j = 0; j < grid[i].length; ++j){
+                    if(!grid[i][j].isEmpty())
+                        System.out.print(Integer.toString(grid[i][j].get(0).itype) + "\t");
+                    else
+                        System.out.print("," + "\t");
+                }
+            }
+
             //Si ya tiene todas las gemas se calcula uno al portal mas cercano. Si no se calcula a la gema mas cercana
             if(nGemas == 10){
                 Vector2d portal;
@@ -76,7 +111,7 @@ public class Agent extends AbstractPlayer {
                 //Se seleccionan el portal mas cercano
                 portal = posiciones[0].get(0).position;
 
-                //Se le aplica el factor de escala para que las coordenas de pixel coincidan con las coordenadas del grig
+                //Se le aplica el factor de escala para que las coordenas de pixel coincidan con las coordenadas del grid
                 portal.x = portal.x / fescala.x;
                 portal.y = portal.y / fescala.y;
 
@@ -109,13 +144,13 @@ public class Agent extends AbstractPlayer {
             if(siguientePos.position.x != avatar.x){
                 if (siguientePos.position.x > avatar.x) {
                     siguienteaccion = Types.ACTIONS.ACTION_RIGHT;
-                }else{
+                } else {
                     siguienteaccion = Types.ACTIONS.ACTION_LEFT;
                 }
             }else{
-                if(siguientePos.position.y > avatar.y){
+                if (siguientePos.position.y > avatar.y){
                     siguienteaccion = Types.ACTIONS.ACTION_DOWN;
-                }else{
+                } else {
                     siguienteaccion = Types.ACTIONS.ACTION_UP;
                 }
             }
@@ -124,34 +159,28 @@ public class Agent extends AbstractPlayer {
             ultimaPos = avatar;
 
             // DEBUG Muestra siguiente acción, posición actual, etc
-            System.out.print("Siguiente posicion:");
+            System.out.print("\nSiguiente posicion:");
             System.out.print(Double.toString(siguientePos.position.x) + ", ");
             System.out.print(Double.toString(siguientePos.position.y) + "\n");
 
-            grid = stateObs.getObservationGrid();
             int p = esPeligrosa(grid, ultimaPos);
             if(p > 0){
-              System.out.print("PELIGROOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
-              if(p == 1){
-                siguienteaccion = Types.ACTIONS.ACTION_RIGHT;
-                System.out.print("derecha.");
-              }
+                System.out.print("\nPELIGROOOOOOOOOOO");
+                if(p == 1){
+                    siguienteaccion = Types.ACTIONS.ACTION_RIGHT;
+                }
 
-              if(p == 2){
-                siguienteaccion = Types.ACTIONS.ACTION_LEFT;
-                System.out.print("izquierda.");
-              }
+                if(p == 2){
+                    siguienteaccion = Types.ACTIONS.ACTION_LEFT;
+                }
 
             }
 
-
             // Baja la velocidad para poder ver sus movimientos
-
             try{
                 Thread.sleep(50);
             }
             catch(Exception e){}
-
 
             //Se devuelve la accion deseada
             return siguienteaccion;
@@ -170,46 +199,49 @@ public class Agent extends AbstractPlayer {
         int x = (int) siguientePos.x;
         int y = (int) siguientePos.y;
 
-        if( y-2 > 0){
-          ArrayList<Observation> obs1 = grid[x][y-1];
-          ArrayList<Observation> obs2 = grid[x][y-2];
+        if (y-2 > 0){
+            ArrayList<Observation> obs1 = grid[x][y-1];
+            ArrayList<Observation> obs2 = grid[x][y-2];
 
-          /*
-          for (int i=0; i < obs1.size() ;i++ ) {
-            System.out.print(obs1.get(i).toString());
-          }
-          */
+            /*
+               for (int i=0; i < obs1.size() ;i++ ) {
+               System.out.print(obs1.get(i).toString());
+               }
+               */
 
+            if (obs1.size() > 0){
+                // Si el objeto de encima es una PIEDRA
+                if ((obs1.get(0).itype == 7)){
+                    System.out.print("Tiene la roca encima");
+                    // TODO Preguntarle a johanna
+                    if (x-1 >= 0){
+                        ArrayList<Observation> obsl1 = grid[x-1][y-1];
+                        ArrayList<Observation> obsl2 = grid[x-1][y-2];
 
-        if(obs1.size() > 0){
-          if((obs1.get(0).itype == 7)){
-              System.out.print("Tiene la roca encima");
-            if( x-1 >= 0){
-              ArrayList<Observation> obsl1 = grid[x-1][y-1];
-              ArrayList<Observation> obsl2 = grid[x-1][y-2];
-              if((obsl1.size() > 0) && (obsl2.size() > 0)){
-                if((obsl1.get(0).itype == 10) ||(obsl2.get(0).itype == 10)){
-                  peligro = 1;
-                }else{
-                  peligro = 2;
+                        if ((obsl1.size() > 0) && (obsl2.size() > 0)){
+                            if ((obsl1.get(0).itype == 10) ||(obsl2.get(0).itype == 10)){
+                                // Siguiente acción: DER
+                                peligro = 1;
+                            } else{
+                                // Siguiente acción: IZQ
+                                peligro = 2;
+                            }
+                        }
+
+                    }
+
                 }
-              }
-
             }
 
-          }
         }
-
-
-      }
 
         /*
-        for(int i=0; i < grid.length; i++){
-          for(int j=0; j < grid[0].length; j++){
-            System.out.print(grid[i][j].toString());
-          }
-        }
-        */
+           for(int i=0; i < grid.length; i++){
+           for(int j=0; j < grid[0].length; j++){
+           System.out.print(grid[i][j].toString());
+           }
+           }
+           */
 
         return peligro;
     }
