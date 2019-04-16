@@ -12,14 +12,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Agent extends BaseAgent {
-    //Objeto de clase Pathfinder
+    //Pathfinder
     private PathFinder pf;
-    private Vector2d fescala;
     private ArrayList<Node> path  = new ArrayList<>();
+    private ArrayList<Observation>[][] grid;
+
     private Vector2d ultimaPos;
+
+    // Auxiliar variables
+    private Vector2d fescala;
     private Boolean actualizarmapa = false;
     private int nGemas = 0;
-    private ArrayList<Observation>[][] grid;
+    private int ticks_stopped = 0;
 
     public Agent(StateObservation stateObs, ElapsedCpuTimer elapsedTimer) {
         super(stateObs, elapsedTimer);
@@ -70,9 +74,17 @@ public class Agent extends BaseAgent {
         // Elimina un paso si ya has llegado a la posición
         if(path != null) //da un nul pointer cuando no encuentra camino a la gema mas cercana y EXPLOTA
             if (!path.isEmpty()){
-                if ((avatar.x != ultimaPos.x) || (avatar.y != ultimaPos.y))
+                if ((avatar.x != ultimaPos.x) || (avatar.y != ultimaPos.y)){
                     path.remove(0);
+                    ticks_stopped = 0;
+                }
+                else
+                    ticks_stopped++;
             }
+
+        if(ticks_stopped > 2){
+            actualizarmapa = true;
+        }
 
         if(actualizarmapa){
           if(path != null)
@@ -169,7 +181,6 @@ public class Agent extends BaseAgent {
                  siguienteaccion = Types.ACTIONS.ACTION_LEFT;
                }
 
-
              return siguienteaccion;
            }
 
@@ -200,7 +211,6 @@ public class Agent extends BaseAgent {
             System.out.print(Double.toString(siguientePos.position.x) + ", ");
             System.out.print(Double.toString(siguientePos.position.y) + "\n");
 
-
             if(esPeligrosa(stateObs,siguienteaccion)){
               //TODO poner que escape al mejor sitio
               siguienteaccion = Types.ACTIONS.ACTION_LEFT;
@@ -219,8 +229,6 @@ public class Agent extends BaseAgent {
 
             }
             */
-
-
 
             //Si no se puede mover porque hay una piedra actualiza el mapa
             actualizarmapa = !puedoMoverme(grid, ultimaPos, siguienteaccion);
@@ -248,19 +256,21 @@ public class Agent extends BaseAgent {
 
       //  int peligro = 0;
 
-        StateObservation nuevastateobs = stateObs.copy();
-        nuevastateobs.advance(siguienteaccion);
+        StateObservation aux_stateobs = stateObs.copy();
+        aux_stateobs.advance(siguienteaccion);
 
-        Vector2d posicion = nuevastateobs.getAvatarPosition();
-        int x = (int) posicion.x / nuevastateobs.getBlockSize();
-        int y = (int) posicion.y / nuevastateobs.getBlockSize();
+        Vector2d posicion = aux_stateobs.getAvatarPosition();
+        int x = (int) posicion.x / aux_stateobs.getBlockSize();
+        int y = (int) posicion.y / aux_stateobs.getBlockSize();
 
-        for(core.game.Observation obs: nuevastateobs.getObservationGrid()[x][y])
+        for(core.game.Observation obs: aux_stateobs.getObservationGrid()[x][y])
           if(obs.itype == 7 || obs.itype == 10 || obs.itype == 11)
             return true;
 
+        System.out.println("Se muere en la siguiente?");
+        System.out.println(Boolean.toString(!aux_stateobs.isAvatarAlive()));
 
-        return !nuevastateobs.isAvatarAlive();
+        return !aux_stateobs.isAvatarAlive();
 
         /*
         int x = (int) ultimaPos.x;
@@ -336,10 +346,7 @@ public class Agent extends BaseAgent {
       //  return peligro;
     }
 
-    /*
-       Mira a ver si el machanguito se puede mover o hay una piedra
-       */
-
+    // Mira a ver si el machanguito se puede mover o hay una piedra
     private Boolean puedoMoverme(ArrayList<Observation>[][] grid, Vector2d posicion, Types.ACTIONS siguiente){
         Boolean puedomoverme = true;
         ArrayList<Observation> obs;
