@@ -6,8 +6,6 @@ import core.player.AbstractPlayer;
 import ontology.Types;
 import tools.ElapsedCpuTimer;
 import tools.Vector2d;
-import tools.pathfinder.Node;
-import tools.pathfinder.PathFinder;
 
 import javax.swing.*;
 import java.util.ArrayList;
@@ -138,6 +136,7 @@ public class Agent extends BaseAgent {
                 //Se selecciona la gema mas cercana
                 if(path == null){
                     gema = posiciones[0].get(1).position;
+                    // DEBUG
                     System.out.print("a por otra gema");
                 }
                 else
@@ -147,6 +146,7 @@ public class Agent extends BaseAgent {
                 gema.x = gema.x / fescala.x;
                 gema.y = gema.y / fescala.y;
 
+                // DEBUG
                 System.out.print("Gema siguiente:");
                 System.out.print(gema.x);
                 System.out.print(gema.y);
@@ -198,7 +198,7 @@ public class Agent extends BaseAgent {
             }
 
             //Si no se puede mover porque hay una piedra actualiza el mapa
-            actualizarmapa = puedoMoverme(grid, ultimaPos, siguienteaccion);
+            actualizarmapa = !puedoMoverme(grid, ultimaPos, siguienteaccion);
 
             // Baja la velocidad para poder ver sus movimientos
             try{
@@ -237,7 +237,6 @@ public class Agent extends BaseAgent {
                 // Si el objeto de encima es una PIEDRA
                 if ((obs1.get(0).itype == 7)){
                     System.out.print("Tiene la roca encima");
-                    // TODO Preguntarle a johanna
                     if (x-1 >= 0){
                         ArrayList<Observation> obsl1 = grid[x-1][y-1];
                         ArrayList<Observation> obsl2 = grid[x-1][y-2];
@@ -275,7 +274,7 @@ public class Agent extends BaseAgent {
        */
 
     private Boolean puedoMoverme(ArrayList<Observation>[][] grid, Vector2d posicion, Types.ACTIONS siguiente){
-        Boolean puedomoverme = false;
+        Boolean puedomoverme = true;
         ArrayList<Observation> obs;
 
         int x = (int) posicion.x;
@@ -283,12 +282,14 @@ public class Agent extends BaseAgent {
 
         if(siguiente == Types.ACTIONS.ACTION_LEFT)
             obs = grid[x-1][y];
-        else
+        else if (siguiente == Types.ACTIONS.ACTION_LEFT)
             obs = grid[x+1][y];
+        else
+            return true;
 
         if(obs.size() > 0)
             if(obs.get(0).itype == 7)
-                puedomoverme = true;
+                puedomoverme = false;
 
         return puedomoverme;
     }
