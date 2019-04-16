@@ -70,14 +70,6 @@ public class Agent extends BaseAgent {
             }
         }
 
-        /*
-           if(path == null){
-           posiciones[0].remove(0);
-
-           return Types.ACTIONS.ACTION_LEFT;
-           }
-           */
-
         // Elimina un paso si ya has llegado a la posición
         if(path != null) //da un nul pointer cuando no encuentra camino a la gema mas cercana y EXPLOTA
             if (!path.isEmpty()){
@@ -86,11 +78,16 @@ public class Agent extends BaseAgent {
             }
 
         if(actualizarmapa){
+          if(path != null)
             path.clear();
-            actualizarmapa = false;
+          else
+            path = new ArrayList<>();
+
+          actualizarmapa = false;
         }
 
         //Si no hay un plan de ruta calculado...
+        if(path != null)
         if(path.isEmpty()){
             System.out.print("\nNo hay path");
 
@@ -156,6 +153,28 @@ public class Agent extends BaseAgent {
 
             }
         }
+
+
+           if(path == null){
+             actualizarmapa = true;
+             Types.ACTIONS siguienteaccion = Types.ACTIONS.ACTION_NIL;
+
+             int p = esPeligrosa(grid, ultimaPos);
+             if(p > 0){
+                 System.out.print("\nPELIGROOOOOOOOOOO");
+                 if(p == 1){
+                     siguienteaccion = Types.ACTIONS.ACTION_RIGHT;
+                 }
+
+                 if(p == 2){
+                     siguienteaccion = Types.ACTIONS.ACTION_LEFT;
+                 }
+               }
+
+             return siguienteaccion;
+           }
+
+
 
         if(!path.isEmpty()){
             Types.ACTIONS siguienteaccion;
