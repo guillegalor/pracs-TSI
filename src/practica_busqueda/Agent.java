@@ -49,8 +49,11 @@ public class Agent extends BaseAgent {
 
     @Override
     public Types.ACTIONS act(StateObservation stateObs, ElapsedCpuTimer elapsedTimer){
-        //Obtenemos la posicion del avatar
-        Vector2d avatar =  new Vector2d(stateObs.getAvatarPosition().x / fescala.x, stateObs.getAvatarPosition().y / fescala.y);
+        // Obtenemos la posicion del avatar
+        Vector2d avatar =  new Vector2d(stateObs.getAvatarPosition().x / fescala.x,
+                stateObs.getAvatarPosition().y / fescala.y);
+
+        // DEBUG
         System.out.println("\n---------------------");
         System.out.println("Posicion del avatar: " + avatar.toString());
         System.out.println("Ultima posicion: " + ultimaPos);
@@ -58,43 +61,34 @@ public class Agent extends BaseAgent {
         // Actualizamos el grid
         grid = stateObs.getObservationGrid();
 
-        Boolean gem_catched = false;
-
-        //Calculamos el numero de gemas que lleva encima
+        // Actualizamos el número de gemas que tiene
         if(stateObs.getAvatarResources().isEmpty() != true){
             if(nGemas != stateObs.getAvatarResources().get(6)){
                 nGemas++;
-                gem_catched = true;
-                System.out.println("Cogemos una gema");
+                actualizarmapa = true;
+                System.out.println("Cogemos una gema y actualizamos los caminos");
             }
         }
 
         /*
-        if(path == null){
-          posiciones[0].remove(0);
+           if(path == null){
+           posiciones[0].remove(0);
 
-          return Types.ACTIONS.ACTION_LEFT;
-        }
-        */
+           return Types.ACTIONS.ACTION_LEFT;
+           }
+           */
 
-        // Recalcular el camino
+        // Elimina un paso si ya has llegado a la posición
         if(path != null) //da un nul pointer cuando no encuentra camino a la gema mas cercana y EXPLOTA
-        if (!path.isEmpty()){
-            if ((avatar.x != ultimaPos.x) || (avatar.y != ultimaPos.y))
-                path.remove(0);
-            // Si acabas de coger una gema, elimina el siguiente paso
-            else if (gem_catched){
-                path.remove(0);
-                gem_catched = false;
+            if (!path.isEmpty()){
+                if ((avatar.x != ultimaPos.x) || (avatar.y != ultimaPos.y))
+                    path.remove(0);
             }
 
-        }
-
         if(actualizarmapa){
-          path.clear();
-          actualizarmapa = false;
+            path.clear();
+            actualizarmapa = false;
         }
-
 
         //Si no hay un plan de ruta calculado...
         if(path.isEmpty()){
@@ -143,11 +137,11 @@ public class Agent extends BaseAgent {
 
                 //Se selecciona la gema mas cercana
                 if(path == null){
-                  gema = posiciones[0].get(1).position;
-                  System.out.print("a por otra gema");
+                    gema = posiciones[0].get(1).position;
+                    System.out.print("a por otra gema");
                 }
                 else
-                  gema = posiciones[0].get(0).position;
+                    gema = posiciones[0].get(0).position;
 
                 //Se le aplica el factor de escala para que las coordenas de pixel coincidan con las coordenadas del grig
                 gema.x = gema.x / fescala.x;
@@ -160,11 +154,10 @@ public class Agent extends BaseAgent {
                 //Calculamos un camino desde la posicion del avatar a la posicion de la gema
                 path = pf.getPath(avatar, gema);
 
-
             }
         }
 
-          if(!path.isEmpty()){
+        if(!path.isEmpty()){
             Types.ACTIONS siguienteaccion;
             Node siguientePos = path.get(0);
 
@@ -204,7 +197,7 @@ public class Agent extends BaseAgent {
 
             }
 
-            //Si no s epued emover porque hay una piedra actualiza el mapa
+            //Si no se puede mover porque hay una piedra actualiza el mapa
             actualizarmapa = puedoMoverme(grid, ultimaPos, siguienteaccion);
 
             // Baja la velocidad para poder ver sus movimientos
@@ -278,26 +271,24 @@ public class Agent extends BaseAgent {
     }
 
     /*
-    Mira a ver si el machanguito se puede mover o hay una piedra
-    */
+       Mira a ver si el machanguito se puede mover o hay una piedra
+       */
 
     private Boolean puedoMoverme(ArrayList<Observation>[][] grid, Vector2d posicion, Types.ACTIONS siguiente){
-      Boolean puedomoverme = false;
-      ArrayList<Observation> obs;
+        Boolean puedomoverme = false;
+        ArrayList<Observation> obs;
 
-      int x = (int) posicion.x;
-      int y = (int) posicion.y;
+        int x = (int) posicion.x;
+        int y = (int) posicion.y;
 
+        if(siguiente == Types.ACTIONS.ACTION_LEFT)
+            obs = grid[x-1][y];
+        else
+            obs = grid[x+1][y];
 
-      if(siguiente == Types.ACTIONS.ACTION_LEFT)
-         obs = grid[x-1][y];
-      else
-         obs = grid[x+1][y];
-
-
-      if(obs.size() > 0)
-        if(obs.get(0).itype == 7)
-          puedomoverme = true;
+        if(obs.size() > 0)
+            if(obs.get(0).itype == 7)
+                puedomoverme = true;
 
         return puedomoverme;
     }
