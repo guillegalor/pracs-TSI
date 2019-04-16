@@ -215,9 +215,12 @@ public class Agent extends BaseAgent {
             //Si no se puede mover porque hay una piedra actualiza el mapa
             actualizarmapa = !puedoMoverme(grid, ultimaPos, siguienteaccion);
 
+            System.out.println("Puedo moverme?");
+            System.out.println(Boolean.toString(!actualizarmapa));
+
             // Baja la velocidad para poder ver sus movimientos
             try{
-                Thread.sleep(50);
+                Thread.sleep(100);
             }
             catch(Exception e){}
 
@@ -297,7 +300,7 @@ public class Agent extends BaseAgent {
 
         if(siguiente == Types.ACTIONS.ACTION_LEFT)
             obs = grid[x-1][y];
-        else if (siguiente == Types.ACTIONS.ACTION_LEFT)
+        else if (siguiente == Types.ACTIONS.ACTION_RIGHT)
             obs = grid[x+1][y];
         else
             return true;
