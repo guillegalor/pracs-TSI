@@ -149,7 +149,7 @@ public class Agent extends BaseAgent {
                 gema.y = gema.y / fescala.y;
 
                 // DEBUG
-                System.out.print("Gema siguiente:");
+                System.out.print("\nGema siguiente:");
                 System.out.print(gema.x);
                 System.out.print(gema.y);
 
@@ -162,6 +162,9 @@ public class Agent extends BaseAgent {
            if(path == null){
              actualizarmapa = true;
              Types.ACTIONS siguienteaccion = Types.ACTIONS.ACTION_NIL;
+
+             //DEBUG
+             System.out.print("\nPath es null.");
 
              /*
              int p = esPeligrosa(grid, ultimaPos, siguienteaccion);
@@ -176,10 +179,8 @@ public class Agent extends BaseAgent {
                  }
                }
                */
-               if(esPeligrosa(stateObs,siguienteaccion)){
-                 //TODO poner que escape al mejor sitio
-                 siguienteaccion = Types.ACTIONS.ACTION_LEFT;
-               }
+               //Si la siguiente accion es peligrosa la cambia sino la deja tal cual
+               siguienteaccion = esPeligrosa(stateObs,siguienteaccion);
 
              return siguienteaccion;
            }
@@ -211,10 +212,9 @@ public class Agent extends BaseAgent {
             System.out.print(Double.toString(siguientePos.position.x) + ", ");
             System.out.print(Double.toString(siguientePos.position.y) + "\n");
 
-            if(esPeligrosa(stateObs,siguienteaccion)){
-              //TODO poner que escape al mejor sitio
-              siguienteaccion = Types.ACTIONS.ACTION_LEFT;
-            }
+            //Si la siguiente accion es peligrosa la cambia sino la deja tal cual
+            siguienteaccion = esPeligrosa(stateObs,siguienteaccion);
+
             /*
             int p = esPeligrosa(grid, ultimaPos, siguienteaccion);
             if(p > 0){
@@ -233,7 +233,7 @@ public class Agent extends BaseAgent {
             //Si no se puede mover porque hay una piedra actualiza el mapa
             actualizarmapa = !puedoMoverme(grid, ultimaPos, siguienteaccion);
 
-            System.out.println("Puedo moverme?");
+            System.out.println("\nPuedo moverme?");
             System.out.println(Boolean.toString(!actualizarmapa));
 
             // Baja la velocidad para poder ver sus movimientos
@@ -241,6 +241,24 @@ public class Agent extends BaseAgent {
                 Thread.sleep(100);
             }
             catch(Exception e){}
+
+            //DEBUG
+            switch (siguienteaccion) {
+
+              case ACTION_LEFT :
+                System.out.print("\nDerecha.");
+                break;
+              case ACTION_RIGHT :
+                System.out.print("\nIquierda");
+                break;
+              case ACTION_UP :
+                System.out.print("\nArriba");
+                break;
+              case ACTION_DOWN :
+                System.out.print("\nAbajo");
+                break;
+
+            }
 
             //Se devuelve la accion deseada
             return siguienteaccion;
@@ -252,9 +270,9 @@ public class Agent extends BaseAgent {
 
     }
 
-    private Boolean esPeligrosa(StateObservation stateObs, Types.ACTIONS siguienteaccion){
+    private Types.ACTIONS esPeligrosa(StateObservation stateObs, Types.ACTIONS siguienteaccion){
 
-      //  int peligro = 0;
+        Boolean peligro = false;
 
         StateObservation aux_stateobs = stateObs.copy();
         aux_stateobs.advance(siguienteaccion);
@@ -263,14 +281,49 @@ public class Agent extends BaseAgent {
         int x = (int) posicion.x / aux_stateobs.getBlockSize();
         int y = (int) posicion.y / aux_stateobs.getBlockSize();
 
+        //DEBUG
+        System.out.print(x); //POSICION 00 EN EL MAPA 3!!! COMO ES ESTO POSIBLE=????
+        System.out.print(y);
+
         for(core.game.Observation obs: aux_stateobs.getObservationGrid()[x][y])
           if(obs.itype == 7 || obs.itype == 10 || obs.itype == 11)
-            return true;
+            peligro = true;
 
-        System.out.println("Se muere en la siguiente?");
+        System.out.println("\nSe muere en la siguiente?");
         System.out.println(Boolean.toString(!aux_stateobs.isAvatarAlive()));
 
-        return !aux_stateobs.isAvatarAlive();
+        peligro = !aux_stateobs.isAvatarAlive();
+
+        if(!peligro){
+          return siguienteaccion;
+        }else{
+
+
+
+          if (x-1 >= 0){
+              ArrayList<Observation> obsl1 = grid[x-1][y];
+
+              //DEBUG
+              System.out.print("\nVeamos que posicion es la mas segura.");
+
+              if ((obsl1.size() > 0)){
+                  if ((obsl1.get(0).itype == 10) ||(obsl1.get(0).itype == 11)){
+                      siguienteaccion = Types.ACTIONS.ACTION_RIGHT;
+                      //DEBUG
+                      System.out.print("\nMe muevo a la derecha.");
+                  } else{
+                      // Siguiente acción: IZQ
+                      siguienteaccion = Types.ACTIONS.ACTION_LEFT;
+                      //DEBUG
+                      System.out.print("\nMe muevo a la derecha.");
+
+                  }
+              }
+            }
+            return siguienteaccion;
+
+        }
+
 
         /*
         int x = (int) ultimaPos.x;
