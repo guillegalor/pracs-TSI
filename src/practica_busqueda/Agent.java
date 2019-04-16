@@ -18,10 +18,9 @@ public class Agent extends BaseAgent {
     private ArrayList<Node> path  = new ArrayList<>();
     private Vector2d ultimaPos;
     private Boolean actualizarmapa = false;
-
     private int nGemas = 0;
-
     private ArrayList<Observation>[][] grid;
+
     public Agent(StateObservation stateObs, ElapsedCpuTimer elapsedTimer) {
         super(stateObs, elapsedTimer);
 
@@ -154,7 +153,6 @@ public class Agent extends BaseAgent {
             }
         }
 
-
            if(path == null){
              actualizarmapa = true;
              Types.ACTIONS siguienteaccion = Types.ACTIONS.ACTION_NIL;
@@ -173,8 +171,6 @@ public class Agent extends BaseAgent {
 
              return siguienteaccion;
            }
-
-
 
         if(!path.isEmpty()){
             Types.ACTIONS siguienteaccion;
