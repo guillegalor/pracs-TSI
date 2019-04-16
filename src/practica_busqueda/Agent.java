@@ -130,13 +130,7 @@ public class Agent extends BaseAgent {
                 ArrayList<Observation>[] posiciones = stateObs.getResourcesPositions(stateObs.getAvatarPosition());
 
                 //Se selecciona la gema mas cercana
-                if(path == null){
-                    gema = posiciones[0].get(1).position;
-                    // DEBUG
-                    System.out.print("a por otra gema");
-                }
-                else
-                    gema = posiciones[0].get(0).position;
+                gema = posiciones[0].get(0).position;
 
                 //Se le aplica el factor de escala para que las coordenas de pixel coincidan con las coordenadas del grig
                 gema.x = gema.x / fescala.x;
@@ -157,7 +151,8 @@ public class Agent extends BaseAgent {
              actualizarmapa = true;
              Types.ACTIONS siguienteaccion = Types.ACTIONS.ACTION_NIL;
 
-             int p = esPeligrosa(grid, ultimaPos);
+             /*
+             int p = esPeligrosa(grid, ultimaPos, siguienteaccion);
              if(p > 0){
                  System.out.print("\nPELIGROOOOOOOOOOO");
                  if(p == 1){
@@ -168,6 +163,12 @@ public class Agent extends BaseAgent {
                      siguienteaccion = Types.ACTIONS.ACTION_LEFT;
                  }
                }
+               */
+               if(esPeligrosa(stateObs,siguienteaccion)){
+                 //TODO poner que escape al mejor sitio
+                 siguienteaccion = Types.ACTIONS.ACTION_LEFT;
+               }
+
 
              return siguienteaccion;
            }
@@ -199,7 +200,13 @@ public class Agent extends BaseAgent {
             System.out.print(Double.toString(siguientePos.position.x) + ", ");
             System.out.print(Double.toString(siguientePos.position.y) + "\n");
 
-            int p = esPeligrosa(grid, ultimaPos);
+
+            if(esPeligrosa(stateObs,siguienteaccion)){
+              //TODO poner que escape al mejor sitio
+              siguienteaccion = Types.ACTIONS.ACTION_LEFT;
+            }
+            /*
+            int p = esPeligrosa(grid, ultimaPos, siguienteaccion);
             if(p > 0){
                 System.out.print("\nPELIGROOOOOOOOOOO");
                 if(p == 1){
@@ -211,6 +218,9 @@ public class Agent extends BaseAgent {
                 }
 
             }
+            */
+
+
 
             //Si no se puede mover porque hay una piedra actualiza el mapa
             actualizarmapa = !puedoMoverme(grid, ultimaPos, siguienteaccion);
@@ -234,12 +244,50 @@ public class Agent extends BaseAgent {
 
     }
 
-    private int esPeligrosa(ArrayList<Observation>[][] grid, Vector2d siguientePos){
+    private Boolean esPeligrosa(StateObservation stateObs, Types.ACTIONS siguienteaccion){
 
-        int peligro = 0;
+      //  int peligro = 0;
 
-        int x = (int) siguientePos.x;
-        int y = (int) siguientePos.y;
+        StateObservation nuevastateobs = stateObs.copy();
+        nuevastateobs.advance(siguienteaccion);
+
+        Vector2d posicion = nuevastateobs.getAvatarPosition();
+        int x = (int) posicion.x / nuevastateobs.getBlockSize();
+        int y = (int) posicion.y / nuevastateobs.getBlockSize();
+
+        for(core.game.Observation obs: nuevastateobs.getObservationGrid()[x][y])
+          if(obs.itype == 7 || obs.itype == 10 || obs.itype == 11)
+            return true;
+
+
+        return !nuevastateobs.isAvatarAlive();
+
+        /*
+        int x = (int) ultimaPos.x;
+        int y = (int) ultimaPos.y;
+        */
+
+        /*
+
+        switch (siguienteaccion) {
+
+          case ACTION_LEFT :
+            x = x-1;
+            break;
+          case ACTION_RIGHT :
+            x = x+1;
+            break;
+          case ACTION_UP :
+            y = y-1;
+            break;
+          case ACTION_DOWN :
+            y = y+1;
+            break;
+
+        }
+        */
+
+        /*
 
         if (y-2 > 0){
             ArrayList<Observation> obs1 = grid[x][y-1];
@@ -251,6 +299,7 @@ public class Agent extends BaseAgent {
                }
                */
 
+        /*
             if (obs1.size() > 0){
                 // Si el objeto de encima es una PIEDRA
                 if ((obs1.get(0).itype == 7)){
@@ -284,7 +333,7 @@ public class Agent extends BaseAgent {
            }
            */
 
-        return peligro;
+      //  return peligro;
     }
 
     /*
