@@ -129,15 +129,15 @@ public class Agent extends BaseAgent {
                     int gema_objetivo = 0;
 
                     //Se crea una lista de observaciones, ordenada por cercania al avatar
-                    ArrayList<Observation>[] posiciones = stateObs.getResourcesPositions(stateObs.getAvatarPosition());
+                    ArrayList<Observation> posiciones_gemas = stateObs.getResourcesPositions(stateObs.getAvatarPosition())[0];
 
                     // NOTE: No podemos comprobar que no se salga de rango porque posiciones es un array
                     // luego no podemos saber su longitud
-                    while (!hay_path){
+                    while (!hay_path && gema_objetivo < posiciones_gemas.size()){
                         Vector2d gema;
 
                         //Se selecciona la gema mas cercana
-                        gema = posiciones[0].get(gema_objetivo).position;
+                        gema = posiciones_gemas.get(gema_objetivo).position;
 
                         //Se le aplica el factor de escala para que las coordenas de pixel coincidan con las coordenadas del grig
                         gema.x = gema.x / fescala.x;
@@ -274,18 +274,6 @@ public class Agent extends BaseAgent {
         StateObservation aux_stateobs = stateObs.copy();
         aux_stateobs.advance(siguienteaccion);
 
-        Vector2d posicion = aux_stateobs.getAvatarPosition();
-        int x = (int) posicion.x / aux_stateobs.getBlockSize();
-        int y = (int) posicion.y / aux_stateobs.getBlockSize();
-
-        //DEBUG
-        System.out.print(x); //POSICION 00 EN EL MAPA 3!!! COMO ES ESTO POSIBLE=????
-        System.out.print(y);
-
-        for(core.game.Observation obs: aux_stateobs.getObservationGrid()[x][y])
-            if(obs.itype == 7 || obs.itype == 10 || obs.itype == 11)
-                peligro = true;
-
         System.out.println("\nSe muere en la siguiente?");
         System.out.println(Boolean.toString(!aux_stateobs.isAvatarAlive()));
 
@@ -293,104 +281,20 @@ public class Agent extends BaseAgent {
 
         if(!peligro){
             return siguienteaccion;
-        }else{
-
-            if (x-1 >= 0){
-                ArrayList<Observation> obsl1 = grid[x-1][y];
-
-                //DEBUG
-                System.out.print("\nVeamos que posicion es la mas segura.");
-
-                if ((obsl1.size() > 0)){
-                    if ((obsl1.get(0).itype == 10) ||(obsl1.get(0).itype == 11)){
-                        siguienteaccion = Types.ACTIONS.ACTION_RIGHT;
-                        //DEBUG
-                        System.out.print("\nMe muevo a la derecha.");
-                    } else{
-                        // Siguiente acción: IZQ
-                        siguienteaccion = Types.ACTIONS.ACTION_LEFT;
-                        //DEBUG
-                        System.out.print("\nMe muevo a la derecha.");
-
-                    }
-                }
-            }
-            return siguienteaccion;
-
-        }
-
-        /*
-           int x = (int) ultimaPos.x;
-           int y = (int) ultimaPos.y;
-           */
-
-        /*
-
-           switch (siguienteaccion) {
-
-           case ACTION_LEFT :
-           x = x-1;
-           break;
-           case ACTION_RIGHT :
-           x = x+1;
-           break;
-           case ACTION_UP :
-           y = y-1;
-           break;
-           case ACTION_DOWN :
-           y = y+1;
-           break;
-
-           }
-           */
-
-        /*
-
-           if (y-2 > 0){
-           ArrayList<Observation> obs1 = grid[x][y-1];
-           ArrayList<Observation> obs2 = grid[x][y-2];
-
-        /*
-        for (int i=0; i < obs1.size() ;i++ ) {
-        System.out.print(obs1.get(i).toString());
-        }
-        */
-
-        /*
-           if (obs1.size() > 0){
-        // Si el objeto de encima es una PIEDRA
-        if ((obs1.get(0).itype == 7)){
-        System.out.print("Tiene la roca encima");
-        if (x-1 >= 0){
-        ArrayList<Observation> obsl1 = grid[x-1][y-1];
-        ArrayList<Observation> obsl2 = grid[x-1][y-2];
-
-        if ((obsl1.size() > 0) && (obsl2.size() > 0)){
-        if ((obsl1.get(0).itype == 10) ||(obsl2.get(0).itype == 10)){
-        // Siguiente acción: DER
-        peligro = 1;
         } else{
-        // Siguiente acción: IZQ
-        peligro = 2;
-        }
-        }
+            int ind = 0;
+
+            do {
+                siguienteaccion = Types.ACTIONS.values()[ind];
+                aux_stateobs = stateObs.copy();
+                aux_stateobs.advance(siguienteaccion);
+                ind += 1;
+            } while (!aux_stateobs.isAvatarAlive() && ind < 7);
 
         }
 
-        }
-           }
-
-           }
-
-        /*
-        for(int i=0; i < grid.length; i++){
-        for(int j=0; j < grid[0].length; j++){
-        System.out.print(grid[i][j].toString());
-        }
-        }
-        */
-
-        //  return peligro;
+        System.out.print(siguienteaccion.toString());
+        return siguienteaccion;
     }
 
     private void simularacciones(StateObservation stateObs){
