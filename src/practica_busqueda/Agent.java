@@ -87,103 +87,92 @@ public class Agent extends BaseAgent {
         }
 
         if(actualizarmapa){
-          if(path != null)
-            path.clear();
-          else
-            path = new ArrayList<>();
+            if(path != null)
+                path.clear();
+            else
+                path = new ArrayList<>();
 
-          actualizarmapa = false;
+            actualizarmapa = false;
         }
 
         //Si no hay un plan de ruta calculado...
         if(path != null)
-        if(path.isEmpty()){
-            System.out.print("\nNo hay path");
+            if(path.isEmpty()){
+                // DEBUG
+                System.out.print("\nNo hay camino, lo recalculamos ---------------");
 
-            // Actualizamos el grid que contiene el pathfinder
-            pf.state = stateObs.copy();
-            pf.grid = grid;
-            // Actualizamos los caminos a partir de nuestra posición
-            pf.runAll((int) avatar.x, (int) avatar.y);
+                // Actualizamos el grid que contiene el pathfinder
+                pf.state = stateObs.copy();
+                pf.grid = grid;
+                // Actualizamos los caminos a partir de nuestra posición
+                pf.runAll((int) avatar.x, (int) avatar.y);
 
-            System.out.println(grid.length);
-            System.out.println(grid[0].length);
-            for(int i = 0; i < grid.length; ++i){
-                System.out.print("\n");
-                for(int j = 0; j < grid[i].length; ++j){
-                    if(!grid[i][j].isEmpty())
-                        System.out.print(Integer.toString(grid[i][j].get(0).itype) + "\t");
-                    else
-                        System.out.print("," + "\t");
+                //Si ya tiene todas las gemas se calcula uno al portal mas cercano. Si no se calcula a la gema mas cercana
+                if(nGemas == 10){
+                    Vector2d portal;
+
+                    //Se crea una lista de observaciones de portales, ordenada por cercania al avatar
+                    ArrayList<Observation>[] posiciones = stateObs.getPortalsPositions(stateObs.getAvatarPosition());
+
+                    //Se seleccionan el portal mas cercano
+                    portal = posiciones[0].get(0).position;
+
+                    //Se le aplica el factor de escala para que las coordenas de pixel coincidan con las coordenadas del grid
+                    portal.x = portal.x / fescala.x;
+                    portal.y = portal.y / fescala.y;
+
+                    //Calculamos un camino desde la posicion del avatar a la posicion del portal
+                    path = pf.getPath(avatar, portal);
+                }
+                else{
+                    Vector2d gema;
+
+                    //Se crea una lista de observaciones, ordenada por cercania al avatar
+                    ArrayList<Observation>[] posiciones = stateObs.getResourcesPositions(stateObs.getAvatarPosition());
+
+                    //Se selecciona la gema mas cercana
+                    gema = posiciones[0].get(0).position;
+
+                    //Se le aplica el factor de escala para que las coordenas de pixel coincidan con las coordenadas del grig
+                    gema.x = gema.x / fescala.x;
+                    gema.y = gema.y / fescala.y;
+
+                    // DEBUG
+                    System.out.print("\nGema siguiente:");
+                    System.out.print(gema.x);
+                    System.out.print(gema.y);
+
+                    //Calculamos un camino desde la posicion del avatar a la posicion de la gema
+                    path = pf.getPath(avatar, gema);
+
                 }
             }
 
-            //Si ya tiene todas las gemas se calcula uno al portal mas cercano. Si no se calcula a la gema mas cercana
-            if(nGemas == 10){
-                Vector2d portal;
+        if(path == null){
+            actualizarmapa = true;
+            Types.ACTIONS siguienteaccion = Types.ACTIONS.ACTION_NIL;
 
-                //Se crea una lista de observaciones de portales, ordenada por cercania al avatar
-                ArrayList<Observation>[] posiciones = stateObs.getPortalsPositions(stateObs.getAvatarPosition());
+            //DEBUG
+            System.out.print("\nPath es null.");
 
-                //Se seleccionan el portal mas cercano
-                portal = posiciones[0].get(0).position;
+            /*
+               int p = esPeligrosa(grid, ultimaPos, siguienteaccion);
+               if(p > 0){
+               System.out.print("\nPELIGROOOOOOOOOOO");
+               if(p == 1){
+               siguienteaccion = Types.ACTIONS.ACTION_RIGHT;
+               }
 
-                //Se le aplica el factor de escala para que las coordenas de pixel coincidan con las coordenadas del grid
-                portal.x = portal.x / fescala.x;
-                portal.y = portal.y / fescala.y;
-
-                //Calculamos un camino desde la posicion del avatar a la posicion del portal
-                path = pf.getPath(avatar, portal);
-            }
-            else{
-                Vector2d gema;
-
-                //Se crea una lista de observaciones, ordenada por cercania al avatar
-                ArrayList<Observation>[] posiciones = stateObs.getResourcesPositions(stateObs.getAvatarPosition());
-
-                //Se selecciona la gema mas cercana
-                gema = posiciones[0].get(0).position;
-
-                //Se le aplica el factor de escala para que las coordenas de pixel coincidan con las coordenadas del grig
-                gema.x = gema.x / fescala.x;
-                gema.y = gema.y / fescala.y;
-
-                // DEBUG
-                System.out.print("\nGema siguiente:");
-                System.out.print(gema.x);
-                System.out.print(gema.y);
-
-                //Calculamos un camino desde la posicion del avatar a la posicion de la gema
-                path = pf.getPath(avatar, gema);
-
-            }
-        }
-
-           if(path == null){
-             actualizarmapa = true;
-             Types.ACTIONS siguienteaccion = Types.ACTIONS.ACTION_NIL;
-
-             //DEBUG
-             System.out.print("\nPath es null.");
-
-             /*
-             int p = esPeligrosa(grid, ultimaPos, siguienteaccion);
-             if(p > 0){
-                 System.out.print("\nPELIGROOOOOOOOOOO");
-                 if(p == 1){
-                     siguienteaccion = Types.ACTIONS.ACTION_RIGHT;
-                 }
-
-                 if(p == 2){
-                     siguienteaccion = Types.ACTIONS.ACTION_LEFT;
-                 }
+               if(p == 2){
+               siguienteaccion = Types.ACTIONS.ACTION_LEFT;
+               }
                }
                */
-               //Si la siguiente accion es peligrosa la cambia sino la deja tal cual
-               siguienteaccion = esPeligrosa(stateObs,siguienteaccion);
+            //Si la siguiente accion es peligrosa la cambia sino la deja tal cual
+            siguienteaccion = esPeligrosa(stateObs,siguienteaccion);
 
-             return siguienteaccion;
-           }
+            return siguienteaccion;
+        }
 
         if(!path.isEmpty()){
             Types.ACTIONS siguienteaccion;
@@ -216,19 +205,19 @@ public class Agent extends BaseAgent {
             siguienteaccion = esPeligrosa(stateObs,siguienteaccion);
 
             /*
-            int p = esPeligrosa(grid, ultimaPos, siguienteaccion);
-            if(p > 0){
-                System.out.print("\nPELIGROOOOOOOOOOO");
-                if(p == 1){
-                    siguienteaccion = Types.ACTIONS.ACTION_RIGHT;
-                }
+               int p = esPeligrosa(grid, ultimaPos, siguienteaccion);
+               if(p > 0){
+               System.out.print("\nPELIGROOOOOOOOOOO");
+               if(p == 1){
+               siguienteaccion = Types.ACTIONS.ACTION_RIGHT;
+               }
 
-                if(p == 2){
-                    siguienteaccion = Types.ACTIONS.ACTION_LEFT;
-                }
+               if(p == 2){
+               siguienteaccion = Types.ACTIONS.ACTION_LEFT;
+               }
 
-            }
-            */
+               }
+               */
 
             //Si no se puede mover porque hay una piedra actualiza el mapa
             actualizarmapa = !puedoMoverme(grid, ultimaPos, siguienteaccion);
@@ -238,25 +227,25 @@ public class Agent extends BaseAgent {
 
             // Baja la velocidad para poder ver sus movimientos
             try{
-                Thread.sleep(100);
+                Thread.sleep(200);
             }
             catch(Exception e){}
 
             //DEBUG
             switch (siguienteaccion) {
 
-              case ACTION_LEFT :
-                System.out.print("\nDerecha.");
-                break;
-              case ACTION_RIGHT :
-                System.out.print("\nIquierda");
-                break;
-              case ACTION_UP :
-                System.out.print("\nArriba");
-                break;
-              case ACTION_DOWN :
-                System.out.print("\nAbajo");
-                break;
+                case ACTION_LEFT :
+                    System.out.print("\nDerecha.");
+                    break;
+                case ACTION_RIGHT :
+                    System.out.print("\nIquierda");
+                    break;
+                case ACTION_UP :
+                    System.out.print("\nArriba");
+                    break;
+                case ACTION_DOWN :
+                    System.out.print("\nAbajo");
+                    break;
 
             }
 
@@ -286,8 +275,8 @@ public class Agent extends BaseAgent {
         System.out.print(y);
 
         for(core.game.Observation obs: aux_stateobs.getObservationGrid()[x][y])
-          if(obs.itype == 7 || obs.itype == 10 || obs.itype == 11)
-            peligro = true;
+            if(obs.itype == 7 || obs.itype == 10 || obs.itype == 11)
+                peligro = true;
 
         System.out.println("\nSe muere en la siguiente?");
         System.out.println(Boolean.toString(!aux_stateobs.isAvatarAlive()));
@@ -295,108 +284,105 @@ public class Agent extends BaseAgent {
         peligro = !aux_stateobs.isAvatarAlive();
 
         if(!peligro){
-          return siguienteaccion;
+            return siguienteaccion;
         }else{
 
+            if (x-1 >= 0){
+                ArrayList<Observation> obsl1 = grid[x-1][y];
 
+                //DEBUG
+                System.out.print("\nVeamos que posicion es la mas segura.");
 
-          if (x-1 >= 0){
-              ArrayList<Observation> obsl1 = grid[x-1][y];
+                if ((obsl1.size() > 0)){
+                    if ((obsl1.get(0).itype == 10) ||(obsl1.get(0).itype == 11)){
+                        siguienteaccion = Types.ACTIONS.ACTION_RIGHT;
+                        //DEBUG
+                        System.out.print("\nMe muevo a la derecha.");
+                    } else{
+                        // Siguiente acción: IZQ
+                        siguienteaccion = Types.ACTIONS.ACTION_LEFT;
+                        //DEBUG
+                        System.out.print("\nMe muevo a la derecha.");
 
-              //DEBUG
-              System.out.print("\nVeamos que posicion es la mas segura.");
-
-              if ((obsl1.size() > 0)){
-                  if ((obsl1.get(0).itype == 10) ||(obsl1.get(0).itype == 11)){
-                      siguienteaccion = Types.ACTIONS.ACTION_RIGHT;
-                      //DEBUG
-                      System.out.print("\nMe muevo a la derecha.");
-                  } else{
-                      // Siguiente acción: IZQ
-                      siguienteaccion = Types.ACTIONS.ACTION_LEFT;
-                      //DEBUG
-                      System.out.print("\nMe muevo a la derecha.");
-
-                  }
-              }
+                    }
+                }
             }
             return siguienteaccion;
 
         }
 
-
         /*
-        int x = (int) ultimaPos.x;
-        int y = (int) ultimaPos.y;
-        */
-
-        /*
-
-        switch (siguienteaccion) {
-
-          case ACTION_LEFT :
-            x = x-1;
-            break;
-          case ACTION_RIGHT :
-            x = x+1;
-            break;
-          case ACTION_UP :
-            y = y-1;
-            break;
-          case ACTION_DOWN :
-            y = y+1;
-            break;
-
-        }
-        */
+           int x = (int) ultimaPos.x;
+           int y = (int) ultimaPos.y;
+           */
 
         /*
 
-        if (y-2 > 0){
-            ArrayList<Observation> obs1 = grid[x][y-1];
-            ArrayList<Observation> obs2 = grid[x][y-2];
+           switch (siguienteaccion) {
 
-            /*
-               for (int i=0; i < obs1.size() ;i++ ) {
-               System.out.print(obs1.get(i).toString());
-               }
-               */
+           case ACTION_LEFT :
+           x = x-1;
+           break;
+           case ACTION_RIGHT :
+           x = x+1;
+           break;
+           case ACTION_UP :
+           y = y-1;
+           break;
+           case ACTION_DOWN :
+           y = y+1;
+           break;
 
-        /*
-            if (obs1.size() > 0){
-                // Si el objeto de encima es una PIEDRA
-                if ((obs1.get(0).itype == 7)){
-                    System.out.print("Tiene la roca encima");
-                    if (x-1 >= 0){
-                        ArrayList<Observation> obsl1 = grid[x-1][y-1];
-                        ArrayList<Observation> obsl2 = grid[x-1][y-2];
-
-                        if ((obsl1.size() > 0) && (obsl2.size() > 0)){
-                            if ((obsl1.get(0).itype == 10) ||(obsl2.get(0).itype == 10)){
-                                // Siguiente acción: DER
-                                peligro = 1;
-                            } else{
-                                // Siguiente acción: IZQ
-                                peligro = 2;
-                            }
-                        }
-
-                    }
-
-                }
-            }
-
-        }
-
-        /*
-           for(int i=0; i < grid.length; i++){
-           for(int j=0; j < grid[0].length; j++){
-           System.out.print(grid[i][j].toString());
-           }
            }
            */
 
-      //  return peligro;
+        /*
+
+           if (y-2 > 0){
+           ArrayList<Observation> obs1 = grid[x][y-1];
+           ArrayList<Observation> obs2 = grid[x][y-2];
+
+        /*
+        for (int i=0; i < obs1.size() ;i++ ) {
+        System.out.print(obs1.get(i).toString());
+        }
+        */
+
+        /*
+           if (obs1.size() > 0){
+        // Si el objeto de encima es una PIEDRA
+        if ((obs1.get(0).itype == 7)){
+        System.out.print("Tiene la roca encima");
+        if (x-1 >= 0){
+        ArrayList<Observation> obsl1 = grid[x-1][y-1];
+        ArrayList<Observation> obsl2 = grid[x-1][y-2];
+
+        if ((obsl1.size() > 0) && (obsl2.size() > 0)){
+        if ((obsl1.get(0).itype == 10) ||(obsl2.get(0).itype == 10)){
+        // Siguiente acción: DER
+        peligro = 1;
+        } else{
+        // Siguiente acción: IZQ
+        peligro = 2;
+        }
+        }
+
+        }
+
+        }
+           }
+
+           }
+
+        /*
+        for(int i=0; i < grid.length; i++){
+        for(int j=0; j < grid[0].length; j++){
+        System.out.print(grid[i][j].toString());
+        }
+        }
+        */
+
+        //  return peligro;
     }
 
     // Mira a ver si el machanguito se puede mover o hay una piedra
