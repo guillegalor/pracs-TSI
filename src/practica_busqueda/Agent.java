@@ -125,26 +125,38 @@ public class Agent extends BaseAgent {
                     path = pf.getPath(avatar, portal);
                 }
                 else{
-                    Vector2d gema;
+                    Boolean hay_path = false;
+                    int gema_objetivo = 0;
 
-                    //Se crea una lista de observaciones, ordenada por cercania al avatar
-                    ArrayList<Observation>[] posiciones = stateObs.getResourcesPositions(stateObs.getAvatarPosition());
+                    while (!hay_path){
+                        Vector2d gema;
 
-                    //Se selecciona la gema mas cercana
-                    gema = posiciones[0].get(0).position;
+                        //Se crea una lista de observaciones, ordenada por cercania al avatar
+                        ArrayList<Observation>[] posiciones = stateObs.getResourcesPositions(stateObs.getAvatarPosition());
 
-                    //Se le aplica el factor de escala para que las coordenas de pixel coincidan con las coordenadas del grig
-                    gema.x = gema.x / fescala.x;
-                    gema.y = gema.y / fescala.y;
+                        //Se selecciona la gema mas cercana
+                        gema = posiciones[0].get(gema_objetivo).position;
 
-                    // DEBUG
-                    System.out.print("\nGema siguiente:");
-                    System.out.print(gema.x);
-                    System.out.print(gema.y);
+                        //Se le aplica el factor de escala para que las coordenas de pixel coincidan con las coordenadas del grig
+                        gema.x = gema.x / fescala.x;
+                        gema.y = gema.y / fescala.y;
 
-                    //Calculamos un camino desde la posicion del avatar a la posicion de la gema
-                    path = pf.getPath(avatar, gema);
+                        // DEBUG
+                        System.out.print("\nGema siguiente:");
 
+                        System.out.print(Double.toString(gema.x) + ", ");
+                        System.out.print(Double.toString(gema.y) + "\n");
+
+                        //Calculamos un camino desde la posicion del avatar a la posicion de la gema
+                        path = pf.getPath(avatar, gema);
+
+                        //Comprobamos si hay camino a dicha gema
+                        hay_path = path != null;
+                        if (!hay_path) gema_objetivo++;
+
+                        // DEBUG
+                        System.out.println("\nHay camino a la gema " + Integer.toString(gema_objetivo) + "? " + Boolean.toString(hay_path));
+                    }
                 }
             }
 
