@@ -67,12 +67,13 @@ public class Agent extends BaseAgent {
             if(nGemas != stateObs.getAvatarResources().get(6)){
                 nGemas++;
                 actualizarmapa = true;
+                // DEBUG
                 System.out.println("Cogemos una gema y actualizamos los caminos");
             }
         }
 
         // Elimina un paso si ya has llegado a la posición
-        if(path != null) //da un nul pointer cuando no encuentra camino a la gema mas cercana y EXPLOTA
+        if(path != null){  //da un nul pointer cuando no encuentra camino a la gema mas cercana y EXPLOTA
             if (!path.isEmpty()){
                 if ((avatar.x != ultimaPos.x) || (avatar.y != ultimaPos.y)){
                     path.remove(0);
@@ -80,87 +81,86 @@ public class Agent extends BaseAgent {
                 }
                 else
                     ticks_stopped++;
+            } else {
+                actualizarmapa = true;
+                System.out.println("Path estaba vacio luego actualizamos");
             }
+        } else {
+            path = new ArrayList<>();
+            actualizarmapa = true;
+            System.out.println("Path era null luego actualizamos");
+        }
 
         if(ticks_stopped > 2){
+            System.out.println("Llevamos mas de dos ticks parados, luego actualizamos los caminos");
             actualizarmapa = true;
         }
 
-        if(actualizarmapa){
-            if(path != null)
-                path.clear();
-            else
-                path = new ArrayList<>();
-
-            actualizarmapa = false;
-        }
-
         //Si no hay un plan de ruta calculado...
-        if(path != null)
-            if(path.isEmpty()){
-                // DEBUG
-                System.out.print("\nNo hay camino, lo recalculamos ---------------");
+        if(actualizarmapa){
+            // DEBUG
+            System.out.print("\nRecalculando caminos ---------------");
 
-                // Actualizamos el grid que contiene el pathfinder
-                pf.state = stateObs.copy();
-                pf.grid = grid;
-                // Actualizamos los caminos a partir de nuestra posición
-                pf.runAll((int) avatar.x, (int) avatar.y);
+            // Actualizamos el grid que contiene el pathfinder
+            pf.state = stateObs.copy();
+            pf.grid = grid;
+            // Actualizamos los caminos a partir de nuestra posición
+            pf.runAll((int) avatar.x, (int) avatar.y);
 
-                //Si ya tiene todas las gemas se calcula uno al portal mas cercano. Si no se calcula a la gema mas cercana
-                if(nGemas == 10){
-                    Vector2d portal;
+            //Si ya tiene todas las gemas se calcula uno al portal mas cercano. Si no se calcula a la gema mas cercana
+            if(nGemas == 10){
+                Vector2d portal;
 
-                    //Se crea una lista de observaciones de portales, ordenada por cercania al avatar
-                    ArrayList<Observation>[] posiciones = stateObs.getPortalsPositions(stateObs.getAvatarPosition());
+                //Se crea una lista de observaciones de portales, ordenada por cercania al avatar
+                ArrayList<Observation>[] posiciones = stateObs.getPortalsPositions(stateObs.getAvatarPosition());
 
-                    //Se seleccionan el portal mas cercano
-                    portal = posiciones[0].get(0).position;
+                //Se seleccionan el portal mas cercano
+                portal = posiciones[0].get(0).position;
 
-                    //Se le aplica el factor de escala para que las coordenas de pixel coincidan con las coordenadas del grid
-                    portal.x = portal.x / fescala.x;
-                    portal.y = portal.y / fescala.y;
+                //Se le aplica el factor de escala para que las coordenas de pixel coincidan con las coordenadas del grid
+                portal.x = portal.x / fescala.x;
+                portal.y = portal.y / fescala.y;
 
-                    //Calculamos un camino desde la posicion del avatar a la posicion del portal
-                    path = pf.getPath(avatar, portal);
-                }
-                else{
-                    Boolean hay_path = false;
-                    int gema_objetivo = 0;
+                //Calculamos un camino desde la posicion del avatar a la posicion del portal
+                path = pf.getPath(avatar, portal);
+            }
+            else{
+                Boolean hay_path = false;
+                int gema_objetivo = 0;
 
-                    //Se crea una lista de observaciones, ordenada por cercania al avatar
-                    ArrayList<Observation> posiciones_gemas = stateObs.getResourcesPositions(stateObs.getAvatarPosition())[0];
+                //Se crea una lista de observaciones, ordenada por cercania al avatar
+                ArrayList<Observation> posiciones_gemas = stateObs.getResourcesPositions(stateObs.getAvatarPosition())[0];
 
-                    // NOTE: No podemos comprobar que no se salga de rango porque posiciones es un array
-                    // luego no podemos saber su longitud
-                    while (!hay_path && gema_objetivo < posiciones_gemas.size()){
-                        Vector2d gema;
+                // NOTE: No podemos comprobar que no se salga de rango porque posiciones es un array
+                // luego no podemos saber su longitud
+                while (!hay_path && gema_objetivo < posiciones_gemas.size()){
+                    Vector2d gema;
 
-                        //Se selecciona la gema mas cercana
-                        gema = posiciones_gemas.get(gema_objetivo).position;
+                    //Se selecciona la gema mas cercana
+                    gema = posiciones_gemas.get(gema_objetivo).position;
 
-                        //Se le aplica el factor de escala para que las coordenas de pixel coincidan con las coordenadas del grig
-                        gema.x = gema.x / fescala.x;
-                        gema.y = gema.y / fescala.y;
+                    //Se le aplica el factor de escala para que las coordenas de pixel coincidan con las coordenadas del grig
+                    gema.x = gema.x / fescala.x;
+                    gema.y = gema.y / fescala.y;
 
-                        // DEBUG
-                        System.out.print("\nGema siguiente:");
+                    // DEBUG
+                    System.out.print("\nGema siguiente:");
 
-                        System.out.print(Double.toString(gema.x) + ", ");
-                        System.out.print(Double.toString(gema.y) + "\n");
+                    System.out.print(Double.toString(gema.x) + ", ");
+                    System.out.print(Double.toString(gema.y) + "\n");
 
-                        //Calculamos un camino desde la posicion del avatar a la posicion de la gema
-                        path = pf.getPath(avatar, gema);
+                    //Calculamos un camino desde la posicion del avatar a la posicion de la gema
+                    path = pf.getPath(avatar, gema);
 
-                        //Comprobamos si hay camino a dicha gema
-                        hay_path = path != null;
-                        if (!hay_path) gema_objetivo++;
+                    //Comprobamos si hay camino a dicha gema
+                    hay_path = path != null;
+                    if (!hay_path) gema_objetivo++;
 
-                        // DEBUG
-                        System.out.println("\nHay camino a la gema " + Integer.toString(gema_objetivo) + "? " + Boolean.toString(hay_path));
-                    }
+                    // DEBUG
+                    System.out.println("\nHay camino a la gema " + Integer.toString(gema_objetivo) + "? " + Boolean.toString(hay_path));
                 }
             }
+        }
 
         if(path == null){
             actualizarmapa = true;
@@ -243,10 +243,10 @@ public class Agent extends BaseAgent {
             switch (siguienteaccion) {
 
                 case ACTION_LEFT :
-                    System.out.print("\nDerecha.");
+                    System.out.print("\nIzquierda.");
                     break;
                 case ACTION_RIGHT :
-                    System.out.print("\nIquierda");
+                    System.out.print("\nDerecha");
                     break;
                 case ACTION_UP :
                     System.out.print("\nArriba");
