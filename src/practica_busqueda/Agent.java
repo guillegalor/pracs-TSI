@@ -128,11 +128,13 @@ public class Agent extends BaseAgent {
                     Boolean hay_path = false;
                     int gema_objetivo = 0;
 
+                    //Se crea una lista de observaciones, ordenada por cercania al avatar
+                    ArrayList<Observation>[] posiciones = stateObs.getResourcesPositions(stateObs.getAvatarPosition());
+
+                    // NOTE: No podemos comprobar que no se salga de rango porque posiciones es un array
+                    // luego no podemos saber su longitud
                     while (!hay_path){
                         Vector2d gema;
-
-                        //Se crea una lista de observaciones, ordenada por cercania al avatar
-                        ArrayList<Observation>[] posiciones = stateObs.getResourcesPositions(stateObs.getAvatarPosition());
 
                         //Se selecciona la gema mas cercana
                         gema = posiciones[0].get(gema_objetivo).position;
@@ -231,15 +233,9 @@ public class Agent extends BaseAgent {
                }
                */
 
-            //Si no se puede mover porque hay una piedra actualiza el mapa
-            actualizarmapa = !puedoMoverme(grid, ultimaPos, siguienteaccion);
-
-            System.out.println("\nPuedo moverme?");
-            System.out.println(Boolean.toString(!actualizarmapa));
-
             // Baja la velocidad para poder ver sus movimientos
             try{
-                Thread.sleep(200);
+                Thread.sleep(150);
             }
             catch(Exception e){}
 
@@ -395,28 +391,6 @@ public class Agent extends BaseAgent {
         */
 
         //  return peligro;
-    }
-
-    // Mira a ver si el machanguito se puede mover o hay una piedra
-    private Boolean puedoMoverme(ArrayList<Observation>[][] grid, Vector2d posicion, Types.ACTIONS siguiente){
-        Boolean puedomoverme = true;
-        ArrayList<Observation> obs;
-
-        int x = (int) posicion.x;
-        int y = (int) posicion.y;
-
-        if(siguiente == Types.ACTIONS.ACTION_LEFT)
-            obs = grid[x-1][y];
-        else if (siguiente == Types.ACTIONS.ACTION_RIGHT)
-            obs = grid[x+1][y];
-        else
-            return true;
-
-        if(obs.size() > 0)
-            if(obs.get(0).itype == 7)
-                puedomoverme = false;
-
-        return puedomoverme;
     }
 
     private void simularacciones(StateObservation stateObs){
