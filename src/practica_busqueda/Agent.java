@@ -154,7 +154,11 @@ public class Agent extends BaseAgent {
 
                         //Comprobamos si hay camino a dicha gema
                         hay_path = path != null;
-                        if (!hay_path) gema_objetivo++;
+
+                        if (!hay_path){
+                          gema_objetivo++;
+
+                        }
 
                         // DEBUG
                         System.out.println("\nHay camino a la gema " + Integer.toString(gema_objetivo) + "? " + Boolean.toString(hay_path));
@@ -278,8 +282,6 @@ public class Agent extends BaseAgent {
 
 
       //newStateObs.advance(siguienteaccion);
-      System.out.print("Buscando bichos OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
-
       switch (siguienteaccion) {
 
           case ACTION_LEFT :
@@ -297,14 +299,8 @@ public class Agent extends BaseAgent {
 
       }
 
-      System.out.print("\nx:" + Integer.toString(x));
-      System.out.print("\ny:" + Integer.toString(y) + "\n");
-
     for(int i = -1; i <= 1; i++){
       for(int j = -1; j <= 1; j++){
-        System.out.print("\nx:" + Integer.toString(x+i));
-        System.out.print("\ny:" + Integer.toString(y+j) + "\n");
-
         for(core.game.Observation obs: newStateObs.getObservationGrid()[x+i][y+j])
           if(obs.itype == 10 || obs.itype == 11)
             return true;
