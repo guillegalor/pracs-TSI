@@ -8,9 +8,6 @@ import tools.ElapsedCpuTimer;
 import tools.Vector2d;
 
 import javax.swing.*;
-
-import org.w3c.dom.Node;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -136,8 +133,6 @@ public class Agent extends BaseAgent {
                 //Se crea una lista de observaciones, ordenada por cercania al avatar
                 ArrayList<Observation> posiciones_gemas = stateObs.getResourcesPositions(stateObs.getAvatarPosition())[0];
 
-                // NOTE: No podemos comprobar que no se salga de rango porque posiciones es un array
-                // luego no podemos saber su longitud
                 while (!hay_path && gema_objetivo < posiciones_gemas.size()){
                     Vector2d gema;
 
@@ -158,15 +153,12 @@ public class Agent extends BaseAgent {
                     path = pf.getPath(avatar, gema);
 
                     //Comprobamos si hay camino a dicha gema
-                    if (path != null){
-                        if (!path.isEmpty())
-                            hay_path = true;
-                    }
-
-                    if (!hay_path) gema_objetivo++;
+                    hay_path = (path != null) && (!path.isEmpty());
 
                     // DEBUG
-                    System.out.println("\n\nHay camino a la gema " + Integer.toString(gema_objetivo) + "? " + Boolean.toString(hay_path)+ "----------\n") ;
+                    System.out.println("\nHay camino a la gema " + Integer.toString(gema_objetivo) + "? " + Boolean.toString(hay_path));
+
+                    if (!hay_path) gema_objetivo++;
                 }
             }
         }
@@ -178,21 +170,8 @@ public class Agent extends BaseAgent {
             //DEBUG
             System.out.print("\nPath es null.");
 
-            /*
-               int p = esPeligrosa(grid, ultimaPos, siguienteaccion);
-               if(p > 0){
-               System.out.print("\nPELIGROOOOOOOOOOO");
-               if(p == 1){
-               siguienteaccion = Types.ACTIONS.ACTION_RIGHT;
-               }
-
-               if(p == 2){
-               siguienteaccion = Types.ACTIONS.ACTION_LEFT;
-               }
-               }
-               */
             //Si la siguiente accion es peligrosa la cambia sino la deja tal cual
-            siguienteaccion = esPeligrosa(stateObs,siguienteaccion);
+            siguienteaccion = esPeligrosa(stateObs, siguienteaccion);
 
             return siguienteaccion;
         }
