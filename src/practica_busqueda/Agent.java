@@ -8,6 +8,9 @@ import tools.ElapsedCpuTimer;
 import tools.Vector2d;
 
 import javax.swing.*;
+
+import org.w3c.dom.Node;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -98,9 +101,11 @@ public class Agent extends BaseAgent {
 
         //Si no hay un plan de ruta calculado...
         if(actualizarmapa){
+            actualizarmapa = false;
             // DEBUG
             System.out.print("\nRecalculando caminos ---------------");
 
+            path.clear();
             // Actualizamos el grid que contiene el pathfinder
             pf.state = stateObs.copy();
             pf.grid = grid;
@@ -153,11 +158,15 @@ public class Agent extends BaseAgent {
                     path = pf.getPath(avatar, gema);
 
                     //Comprobamos si hay camino a dicha gema
-                    hay_path = path != null;
+                    if (path != null){
+                        if (!path.isEmpty())
+                            hay_path = true;
+                    }
+
                     if (!hay_path) gema_objetivo++;
 
                     // DEBUG
-                    System.out.println("\nHay camino a la gema " + Integer.toString(gema_objetivo) + "? " + Boolean.toString(hay_path));
+                    System.out.println("\n\nHay camino a la gema " + Integer.toString(gema_objetivo) + "? " + Boolean.toString(hay_path)+ "----------\n") ;
                 }
             }
         }
@@ -235,7 +244,7 @@ public class Agent extends BaseAgent {
 
             // Baja la velocidad para poder ver sus movimientos
             try{
-                Thread.sleep(150);
+                Thread.sleep(100);
             }
             catch(Exception e){}
 
