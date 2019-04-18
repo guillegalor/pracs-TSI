@@ -21,7 +21,7 @@ public class Agent extends BaseAgent {
 
     // Auxiliar variables
     private Vector2d fescala;
-    private Boolean actualizarmapa = false;
+    private Boolean actualizarmapa = true;
     private int nGemas = 0;
     private int ticks_stopped = 0;
 
@@ -102,12 +102,11 @@ public class Agent extends BaseAgent {
             // DEBUG
             System.out.print("\nRecalculando caminos ---------------");
 
-            path.clear();
             // Actualizamos el grid que contiene el pathfinder
             pf.state = stateObs.copy();
             pf.grid = grid;
-            // Actualizamos los caminos a partir de nuestra posición
-            pf.runAll((int) avatar.x, (int) avatar.y);
+
+            Node avatar_node = new Node(avatar);
 
             //Si ya tiene todas las gemas se calcula uno al portal mas cercano. Si no se calcula a la gema mas cercana
             if(nGemas == 10){
@@ -123,8 +122,10 @@ public class Agent extends BaseAgent {
                 portal.x = portal.x / fescala.x;
                 portal.y = portal.y / fescala.y;
 
+                Node portal_node = new Node(portal);
+
                 //Calculamos un camino desde la posicion del avatar a la posicion del portal
-                path = pf.getPath(avatar, portal);
+                path = pf.astar._findPath(avatar_node, portal_node);
             }
             else{
                 Boolean hay_path = false;
@@ -143,6 +144,8 @@ public class Agent extends BaseAgent {
                     gema.x = gema.x / fescala.x;
                     gema.y = gema.y / fescala.y;
 
+                    Node gema_node = new Node(gema);
+
                     // DEBUG
                     System.out.print("\nGema siguiente:");
 
@@ -150,7 +153,7 @@ public class Agent extends BaseAgent {
                     System.out.print(Double.toString(gema.y) + "\n");
 
                     //Calculamos un camino desde la posicion del avatar a la posicion de la gema
-                    path = pf.getPath(avatar, gema);
+                    path = pf.astar._findPath(avatar_node, gema_node);
 
                     //Comprobamos si hay camino a dicha gema
                     hay_path = (path != null) && (!path.isEmpty());
@@ -205,21 +208,6 @@ public class Agent extends BaseAgent {
 
             //Si la siguiente accion es peligrosa la cambia sino la deja tal cual
             siguienteaccion = esPeligrosa(stateObs,siguienteaccion);
-
-            /*
-               int p = esPeligrosa(grid, ultimaPos, siguienteaccion);
-               if(p > 0){
-               System.out.print("\nPELIGROOOOOOOOOOO");
-               if(p == 1){
-               siguienteaccion = Types.ACTIONS.ACTION_RIGHT;
-               }
-
-               if(p == 2){
-               siguienteaccion = Types.ACTIONS.ACTION_LEFT;
-               }
-
-               }
-               */
 
             // Baja la velocidad para poder ver sus movimientos
             try{
