@@ -169,19 +169,6 @@ public class Agent extends BaseAgent {
             //DEBUG
             System.out.print("\nPath es null.");
 
-            /*
-               int p = esPeligrosa(grid, ultimaPos, siguienteaccion);
-               if(p > 0){
-               System.out.print("\nPELIGROOOOOOOOOOO");
-               if(p == 1){
-               siguienteaccion = Types.ACTIONS.ACTION_RIGHT;
-               }
-
-               if(p == 2){
-               siguienteaccion = Types.ACTIONS.ACTION_LEFT;
-               }
-               }
-               */
             //Si la siguiente accion es peligrosa la cambia sino la deja tal cual
             siguienteaccion = esPeligrosa(stateObs,siguienteaccion);
 
@@ -217,21 +204,6 @@ public class Agent extends BaseAgent {
 
             //Si la siguiente accion es peligrosa la cambia sino la deja tal cual
             siguienteaccion = esPeligrosa(stateObs,siguienteaccion);
-
-            /*
-               int p = esPeligrosa(grid, ultimaPos, siguienteaccion);
-               if(p > 0){
-               System.out.print("\nPELIGROOOOOOOOOOO");
-               if(p == 1){
-               siguienteaccion = Types.ACTIONS.ACTION_RIGHT;
-               }
-
-               if(p == 2){
-               siguienteaccion = Types.ACTIONS.ACTION_LEFT;
-               }
-
-               }
-               */
 
             // Baja la velocidad para poder ver sus movimientos
             try{
@@ -289,12 +261,58 @@ public class Agent extends BaseAgent {
                 aux_stateobs = stateObs.copy();
                 aux_stateobs.advance(siguienteaccion);
                 ind += 1;
-            } while (!aux_stateobs.isAvatarAlive() && ind < 7);
+            } while (!aux_stateobs.isAvatarAlive() && ind < 7 && !haybichoscerca(stateObs, siguienteaccion));
 
         }
 
         System.out.print(siguienteaccion.toString());
         return siguienteaccion;
+    }
+
+    private Boolean haybichoscerca(StateObservation stateObs, Types.ACTIONS siguienteaccion){
+      StateObservation newStateObs = stateObs.copy();
+
+      Vector2d position = newStateObs.getAvatarPosition();
+      int x = (int) (position.x / fescala.x);
+      int y = (int) (position.y / fescala.y);
+
+
+      //newStateObs.advance(siguienteaccion);
+      System.out.print("Buscando bichos OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
+
+      switch (siguienteaccion) {
+
+          case ACTION_LEFT :
+              x = x-1;
+              break;
+          case ACTION_RIGHT :
+              x = x+1;
+              break;
+          case ACTION_UP :
+              y = y-1;
+              break;
+          case ACTION_DOWN :
+              y = y+1;
+              break;
+
+      }
+
+      System.out.print("\nx:" + Integer.toString(x));
+      System.out.print("\ny:" + Integer.toString(y) + "\n");
+
+    for(int i = -1; i <= 1; i++){
+      for(int j = -1; j <= 1; j++){
+        System.out.print("\nx:" + Integer.toString(x+i));
+        System.out.print("\ny:" + Integer.toString(y+j) + "\n");
+
+        for(core.game.Observation obs: newStateObs.getObservationGrid()[x+i][y+j])
+          if(obs.itype == 10 || obs.itype == 11)
+            return true;
+      }
+    }
+
+
+      return false;
     }
 
     private void simularacciones(StateObservation stateObs){
