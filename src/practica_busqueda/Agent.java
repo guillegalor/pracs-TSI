@@ -13,7 +13,7 @@ import java.util.HashMap;
 
 public class Agent extends BaseAgent {
     //Pathfinder
-    private PathFinder pf;
+    private PathFinder pf, pf_10_gemas;
     private ArrayList<Node> path  = new ArrayList<>();
     private ArrayList<Observation>[][] grid;
 
@@ -39,6 +39,19 @@ public class Agent extends BaseAgent {
 
         //Se lanza el algoritmo de pathfinding para poder ser usado en la funcion aCT
         pf.run(stateObs);
+
+        // inicialización del pathfinder cuando tienes 10 gemas
+        ArrayList<Integer> tiposObs10gems = new ArrayList();
+        tiposObs10gems.add(0); //<- Muros
+        tiposObs10gems.add(7); //<- Piedras
+        tiposObs10gems.add(6); //<- Gemas
+
+        //Se inicializa el objeto del pathfinder con las ids de los obstaculos
+        pf_10_gemas = new PathFinder(tiposObs10gems);
+        pf_10_gemas.VERBOSE = false;
+
+        //Se lanza el algoritmo de pathfinding para poder ser usado en la funcion aCT
+        pf_10_gemas.run(stateObs);
 
         //Calculamos el factor de escala entre mundos
         fescala = new Vector2d(stateObs.getWorldDimension().width / stateObs.getObservationGrid().length , stateObs.getWorldDimension().height / stateObs.getObservationGrid()[0].length);
@@ -102,14 +115,14 @@ public class Agent extends BaseAgent {
             // DEBUG
             System.out.print("\nRecalculando caminos ---------------");
 
-            // Actualizamos el grid que contiene el pathfinder
-            pf.state = stateObs.copy();
-            pf.grid = grid;
-
             Node avatar_node = new Node(avatar);
 
             //Si ya tiene todas las gemas se calcula uno al portal mas cercano. Si no se calcula a la gema mas cercana
             if(nGemas == 10){
+                // Actualizamos el grid que contiene el pathfinder
+                pf_10_gemas.state = stateObs.copy();
+                pf_10_gemas.grid = grid;
+
                 Vector2d portal;
 
                 //Se crea una lista de observaciones de portales, ordenada por cercania al avatar
@@ -125,9 +138,14 @@ public class Agent extends BaseAgent {
                 Node portal_node = new Node(portal);
 
                 //Calculamos un camino desde la posicion del avatar a la posicion del portal
-                path = pf.astar._findPath(avatar_node, portal_node);
+                path = pf_10_gemas.astar._findPath(avatar_node, portal_node);
             }
             else{
+
+                // Actualizamos el grid que contiene el pathfinder
+                pf.state = stateObs.copy();
+                pf.grid = grid;
+
                 Boolean hay_path = false;
                 int gema_objetivo = 0;
 

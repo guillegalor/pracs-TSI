@@ -49,7 +49,7 @@ public class PathFinder {
         }
     }
 
-    private void init()
+    public void init()
     {
         if(x_arrNeig == null)
         {
