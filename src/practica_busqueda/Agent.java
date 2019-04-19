@@ -133,6 +133,36 @@ public class Agent extends BaseAgent {
 
                 //Se crea una lista de observaciones, ordenada por cercania al avatar
                 ArrayList<Observation> posiciones_gemas = stateObs.getResourcesPositions(stateObs.getAvatarPosition())[0];
+                ArrayList<Integer> path_lengths = new ArrayList(posiciones_gemas.size());
+
+                // Almacenamos la longitud de cada camino
+                for (Observation obs : posiciones_gemas) {
+                    Vector2d gema = obs.position.copy();
+
+                    gema.x = gema.x / fescala.x;
+                    gema.y = gema.y / fescala.y;
+                    path = pf.getPath(avatar, gema);
+
+                    if(path != null)
+                        path_lengths.add(path.size());
+                    else
+                        path_lengths.add(Integer.MAX_VALUE);
+                }
+
+                // Ordena las gemas por longitud menor del camino
+                int n = path_lengths.size();
+                for (int j = 1; j < n; j++) {
+                    int l_key = path_lengths.get(j);
+                    Observation o_key = posiciones_gemas.get(j);
+                    int i = j-1;
+                    while ( (i > -1) && ( path_lengths.get(i) > l_key ) ) {
+                        posiciones_gemas.set(i+1, posiciones_gemas.get(i));
+                        path_lengths.set(i+1, path_lengths.get(i));
+                        i--;
+                    }
+                    posiciones_gemas.set(i+1, o_key);
+                    path_lengths.set(i+1, l_key);
+                }
 
                 while (!hay_path && gema_objetivo < posiciones_gemas.size()){
                     Vector2d gema;
@@ -207,32 +237,20 @@ public class Agent extends BaseAgent {
             System.out.print(Double.toString(siguientePos.position.y) + "\n");
 
             //Si la siguiente accion es peligrosa la cambia sino la deja tal cual
-            siguienteaccion = esPeligrosa(stateObs,siguienteaccion);
+            Types.ACTIONS aux_accion = esPeligrosa(stateObs, siguienteaccion);
+            if (aux_accion != siguienteaccion) {
+                siguienteaccion = aux_accion;
+                actualizarmapa = true;
+            }
 
             // Baja la velocidad para poder ver sus movimientos
             try{
-                Thread.sleep(100);
+                Thread.sleep(50);
             }
             catch(Exception e){}
 
             //DEBUG
-            switch (siguienteaccion) {
-
-                case ACTION_LEFT :
-                    System.out.print("\nIzquierda.");
-                    break;
-                case ACTION_RIGHT :
-                    System.out.print("\nDerecha");
-                    break;
-                case ACTION_UP :
-                    System.out.print("\nArriba");
-                    break;
-                case ACTION_DOWN :
-                    System.out.print("\nAbajo");
-                    break;
-
-            }
-
+            System.out.print(siguienteaccion.toString());
             //Se devuelve la accion deseada
             return siguienteaccion;
         }
@@ -245,32 +263,73 @@ public class Agent extends BaseAgent {
 
     private Types.ACTIONS esPeligrosa(StateObservation stateObs, Types.ACTIONS siguienteaccion){
 
+        // Array con todas las posibles acciones
+        ArrayList<Types.ACTIONS> posibles_acciones = new ArrayList();
+        for (int i = 0; i < Types.ACTIONS.values().length; i++){
+            posibles_acciones.add(Types.ACTIONS.values()[i]);
+        }
+
         Boolean peligro = false;
 
         StateObservation aux_stateobs = stateObs.copy();
         aux_stateobs.advance(siguienteaccion);
 
+        // DEBUG
         System.out.println("\nSe muere en la siguiente?");
         System.out.println(Boolean.toString(!aux_stateobs.isAvatarAlive()));
 
         peligro = !aux_stateobs.isAvatarAlive();
 
+        // Comprobamos que no entra en una situación en la que siempre muere
         if(!peligro){
-            return siguienteaccion;
-        } else{
+            boolean muere_siempre = true;
             int ind = 0;
+            Types.ACTIONS accion_futura;
 
             do {
-                siguienteaccion = Types.ACTIONS.values()[ind];
+                accion_futura = Types.ACTIONS.values()[ind];
                 aux_stateobs = stateObs.copy();
                 aux_stateobs.advance(siguienteaccion);
+                aux_stateobs.advance(accion_futura);
                 ind += 1;
-            } while (!aux_stateobs.isAvatarAlive() && ind < 7 && !haybichoscerca(stateObs, siguienteaccion));
+            } while (!aux_stateobs.isAvatarAlive() && ind < Types.ACTIONS.values().length);
 
+            if (aux_stateobs.isAvatarAlive()){
+                muere_siempre = false;
+            }
+
+            if (!muere_siempre)
+                return siguienteaccion;
+            else
+                posibles_acciones.remove(siguienteaccion);
         }
 
-        System.out.print(siguienteaccion.toString());
-        return siguienteaccion;
+        for (Types.ACTIONS accion_candidata : posibles_acciones){
+            // Comprobamos que no entra en una situación en la que siempre muere
+            if (aux_stateobs.isAvatarAlive()){
+                boolean muere_siempre = true;
+                int ind = 0;
+                Types.ACTIONS accion_futura;
+
+                do {
+                    accion_futura = Types.ACTIONS.values()[ind];
+                    aux_stateobs = stateObs.copy();
+                    aux_stateobs.advance(accion_candidata);
+                    aux_stateobs.advance(accion_futura);
+                    ind += 1;
+                } while (!aux_stateobs.isAvatarAlive() && ind < Types.ACTIONS.values().length);
+
+                if (aux_stateobs.isAvatarAlive()){
+                    muere_siempre = false;
+                }
+
+                if (!muere_siempre)
+                    return accion_candidata;
+            }
+        }
+
+        System.out.print("Se va a morir");
+        return Types.ACTIONS.ACTION_NIL;
     }
 
     private Boolean haybichoscerca(StateObservation stateObs, Types.ACTIONS siguienteaccion){
