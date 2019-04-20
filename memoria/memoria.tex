@@ -1,0 +1,320 @@
+\documentclass[size=a4, parskip=half, titlepage=false, toc=flat, toc=bib, 12pt]{scrartcl}
+
+\setuptoc{toc}{leveldown}
+
+% Ajuste de las líneas y párrafos
+\linespread{1.2}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{12pt}
+
+% Español
+\usepackage[spanish, es-tabla]{babel}
+
+% Matemáticas
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+% Fuentes
+\usepackage{newpxtext,newpxmath}
+\usepackage[scale=.9]{FiraMono}
+\usepackage{FiraSans}
+\usepackage[T1]{fontenc}
+
+\defaultfontfeatures{Ligatures=TeX,Numbers=Lining}
+\usepackage[activate={true,nocompatibility},final,tracking=true,factor=1100,stretch=10,shrink=10]{microtype}
+\SetTracking{encoding={*}, shape=sc}{0}
+
+\usepackage{graphicx}
+\usepackage{float}
+
+% Mejores tablas
+\usepackage{booktabs}
+
+\usepackage{adjustbox}
+
+% COLORES
+
+\usepackage{xcolor}
+
+\definecolor{verde}{HTML}{007D51}
+\definecolor{esmeralda}{HTML}{045D56}
+\definecolor{salmon}{HTML}{FF6859}
+\definecolor{amarillo}{HTML}{FFAC12}
+\definecolor{morado}{HTML}{A932FF}
+\definecolor{azul}{HTML}{0082FB}
+\definecolor{error}{HTML}{b00020}
+
+% ENTORNOS
+\usepackage[skins, listings, theorems]{tcolorbox}
+
+\newtcolorbox{recuerda}{
+  enhanced,
+%  sharp corners,
+  frame hidden,
+  colback=black!10,
+	lefttitle=0pt,
+  coltitle=black,
+  fonttitle=\bfseries\sffamily\scshape,
+  titlerule=0.8mm,
+  titlerule style=black,
+  title=\raisebox{-0.6ex}{\small RECUERDA}
+}
+
+\newtcolorbox{nota}{
+  enhanced,
+%  sharp corners,
+  frame hidden,
+  colback=black!10,
+	lefttitle=0pt,
+  coltitle=black,
+  fonttitle=\bfseries\sffamily\scshape,
+  titlerule=0.8mm,
+  titlerule style=black,
+  title=\raisebox{-0.6ex}{\small NOTA}
+}
+
+\newtcolorbox{error}{
+  enhanced,
+%  sharp corners,
+  frame hidden,
+  colback=error!10,
+	lefttitle=0pt,
+  coltitle=error,
+  fonttitle=\bfseries\sffamily\scshape,
+  titlerule=0.8mm,
+  titlerule style=error,
+  title=\raisebox{-0.6ex}{\small ERROR}
+}
+
+\newtcblisting{shell}{
+  enhanced,
+  colback=black!10,
+  colupper=black,
+  frame hidden,
+  opacityback=0,
+  coltitle=black,
+  fonttitle=\bfseries\sffamily\scshape,
+  %titlerule=0.8mm,
+  %titlerule style=black,
+  %title=Consola,
+  listing only,
+  listing options={
+    style=tcblatex,
+    language=sh,
+    breaklines=true,
+    postbreak=\mbox{\textcolor{black}{$\hookrightarrow$}\space},
+    emph={jmml@UbuntuServer, jmml@CentOS},
+    emphstyle={\bfseries},
+  },
+}
+
+\newtcbtheorem[number within=section]{teor}{\small TEOREMA}{
+  enhanced,
+  sharp corners,
+  frame hidden,
+  colback=white,
+  coltitle=black,
+  fonttitle=\bfseries\sffamily,
+  %separator sign=\raisebox{-0.65ex}{\Large\MI\symbol{58828}},
+  description font=\itshape
+}{teor}
+
+\newtcbtheorem[number within=section]{prop}{\small PROPOSICIÓN}{
+  enhanced,
+  sharp corners,
+  frame hidden,
+  colback=white,
+  coltitle=black,
+  fonttitle=\bfseries\sffamily,
+  %separator sign=\raisebox{-0.65ex}{\Large\MI\symbol{58828}},
+  description font=\itshape
+}{prop}
+
+\newtcbtheorem[number within=section]{cor}{\small COROLARIO}{
+  enhanced,
+  sharp corners,
+  frame hidden,
+  colback=white,
+  coltitle=black,
+  fonttitle=\bfseries\sffamily,
+  %separator sign=\raisebox{-0.65ex}{\Large\MI\symbol{58828}},
+  description font=\itshape
+}{cor}
+
+\newtcbtheorem[number within=section]{defi}{\small DEFINICIÓN}{
+  enhanced,
+  sharp corners,
+  frame hidden,
+  colback=white,
+  coltitle=black,
+  fonttitle=\bfseries\sffamily,
+  %separator sign=\raisebox{-0.65ex}{\Large\MI\symbol{58828}},
+  description font=\itshape
+}{defi}
+
+\newtcbtheorem{ejer}{\small EJERCICIO}{
+  enhanced,
+  sharp corners,
+  frame hidden,
+  left=0mm,
+  right=0mm,
+  colback=white,
+  coltitle=black,
+  fonttitle=\bfseries\sffamily,
+  %separator sign=\raisebox{-0.65ex}{\Large\MI\symbol{58828}},
+  description font=\itshape,
+  nameref/.style={},
+}{ejer}
+
+
+% CÓDIGO
+\usepackage{listings}
+
+% CABECERAS
+\pagestyle{headings}
+\setkomafont{pageheadfoot}{\normalfont\normalcolor\sffamily\small}
+\setkomafont{pagenumber}{\normalfont\sffamily}
+
+% ALGORITMOS
+\usepackage[vlined,linesnumbered]{algorithm2e}
+
+% Formato de los pies de figura
+\setkomafont{captionlabel}{\scshape}
+\SetAlCapFnt{\normalfont\scshape}
+\SetAlgorithmName{Algoritmo}{Algoritmo}{Lista de algoritmos}
+
+% BIBLIOGRAFÍA
+%\usepackage[sorting=none]{biblatex}
+%\addbibresource{bibliografia.bib}
+
+
+\begin{document}
+
+\renewcommand{\proofname}{\normalfont\sffamily\bfseries\small DEMOSTRACIÓN}
+
+\title{Práctica 1}
+\subject{T.S.I.}
+\author{Johanna Capote Robayna \\ Guillermo Galindo Ortuño}
+\publishers{\vspace{2cm}\includegraphics[height=2.5cm]{UGR}\vspace{1cm}}
+\maketitle
+
+
+\newpage
+
+\section{Introducción}
+
+En esta práctica se nos pedía programar un controlador del entorno GVG\_AI capaz
+de guiar a un avatar que fuera capaz de pasar los distintos niveles del juego.
+Este avatar aparte de un comportamiento deliberativo basado en el algoritmo A*
+debía ser capaz de esquivar a los enemigos mediante un comportamiento reactivo.
+
+Esta memoria se dicidirá en tres partes, una descripción general de la solución,
+otra del comportammiento reactiva y la última explicara el comportamiento deliverativo.
+\newpage
+
+\section{Descripción general de la solución}
+El esquema general del comportamiento del avatar es el siguiente:
+\begin{itemize}
+\item La estrategia de búsqueda consiste en ordenar las gemas según la longitud del camino que el algoritmo A*
+proporciona para llegar a cada una de ellas, con esto se busca optimizar el
+tiempo, ya que no siempre la gema más cercana al avatar tiene el camino más corto.
+
+\item El avatar comienza con un comportamiento deliberativo, donde va recolectando
+las gemas en el orden proporcionado.
+
+\item En caso de que el avatar detecte que pueda morir en el siguiente movimiento
+se activa el comportamiento reactivo, con el que se busca que el agente
+sepa reaccionar a situaciones inesperadas.
+
+\item La heurística empleada es la distancia Manhatam, se ha decidido no cambiar
+la heuristica puesto que es admisible, lo cual hace que A*
+ encuentre siempre un camino óptimo a la gema que buscamos en caso de que exista.
+
+\item El aspecto más relevante del controlador, es su capacidad de reaccionar
+a cualquier imprevisto, ya que debido a la características de los mapas
+proporcionados era uno de los principales problemas a resolver. El hecho de que
+el mapa pueda cambiar con el desprendimiento de rocas y la aprición de enemigos
+que puedan provocar la muerte del avatar, hacen que este sea el principal objetivo
+a resolver.
+\end{itemize}
+
+\newpage
+
+\section{Comportamiento reactivo}
+Como se comento anteriormente, el comportamiento reactivo es el que más importancia
+se le ha dado en esta práctica ya que era el principal motivo de muerte del avatar.
+Este se basa en una única función \textit{esPeligrosa}, en esta función se gestiona
+todo el comportamiento reactivo.
+
+En primer lugar, se crea un \texit{array} de posibles acciones, de las cuales
+se devolverá alguna. A continuación se recrea el movimiento que el comportamiento
+deliberativo planeaba hacer, y se comprueba si el agente muere al realizar dicha acción.
+En caso de no morir, se comprueba que el movimiento no le lleve a una muerte segura,
+es decir que en el hipotético caso de hacer el movimiento halla al menos un movimiento que
+pueda hacer en el siguiente turno sin morir. Si una vez recreado el movimiento hay algún
+movimiento en el que no muera, se devuelve la acción planeada, de no ser así se borra de
+la lista de posibles acciones y se busca una acción que no lleve al agente a una muerte segura.
+
+En la segunda parte de la función, una vez descartado el movimiento que devolvió el comportamiento
+deliberativo puesto que este conducía a una muerte segura, pasamos a buscar otra acción. Para ello
+recorremos el \texit{array} de posibles acciones repitiendo el proceso anterior, recreamos cada una
+de las posibles acciones por orden y devolvemos aquella que no conduce a una muerte segura. En caso
+de no encontrar ninguna acción, se asume que el avatar va a morir y se devuelve la acción \textit{NIL}.
+
+\begin{algorithm}[H]
+ \KwData{StateObservation stateObs, Types.ACTIONS siguienteaccion}
+ \KwResult{Types.ACTIONS siguienteaccion}
+ posibles\_acciones = Types.ACTIONS.values()\;
+ peligro = false\;
+ aux\_stateobs = stateObs.copy()\;
+ aux\_sateobs.advance(siguienteaccion)\;
+
+ peligro = !aux\_stateobs.isAvatarAlive()\;
+ \If{!peligro}{
+    muere\_siempre = true\;
+    indice = 0\;
+    \Repeat{ aux\_stateobs.isAvatarAlive() \textbf{or} ind >= Types.ACTIONS.Values().length}{
+      accion\_futura = Types.ACTIONS.values()[indice]\;
+      aux\_stateobs = stateObs.copy()\;
+      aux\_stateobs.advance(siguienteaccion)\;
+      aux\_stateobs.advance(accion\_futura)\;
+      indice ++\;
+    }
+    \If{aux\_stateobs.isAvatarAlive()}{muere\_siempre = false\;}
+    \If{!muere\_siempre}{\Return siguiente\_accion \;}
+    \Else{posibles\_acciones.remove(siguienteaccion) \;}
+ }
+ \For{accion\_candidata \textbf{in} posibles\_acciones}{
+    \If{aux\_stateobs.isAvatarAlive()}{
+    muere\_siempre = true\;
+    indice = 0\;
+    \Repeat{ aux\_stateobs.isAvatarAlive() \textbf{or} ind >= Types.ACTIONS.Values().length}{
+      accion\_futura = Types.ACTIONS.values()[indice]\;
+      aux\_stateobs = stateObs.copy()\;
+      aux\_stateobs.advance(siguienteaccion)\;
+      aux\_stateobs.advance(accion\_futura)\;
+      indice ++\;
+    }
+    \If{aux\_stateobs.isAvatarAlive()}{muere\_siempre = false\;}
+    \If{!muere\_siempre}{\Return accion\_candidata \;}
+    }
+ }
+ \Return Types.ACTIONS.ACTION\_NIL\;
+ \caption{función: \textit{esPeligrosa}}
+\end{algorithm}
+
+\newpage
+
+\section{Comportamiento deliberativo}
+El comportamiento deliberativo del agente es bastante sencillo, este se reduce
+a llamar al algoritmo A* para buscar un camino hacia cada gema. Estas gemas,
+como se comentó anteriormente, están ordenadas por la longitud del camino.
+En caso de no encontrar un camino (A* devuelve \texit{null}) se elige como
+siguiente acción \textit{NIL} y se llama a la función \textit{esPeligrosa}
+para garantizar que no muera en el siguiente movimiento.
+
+
+%printbibliography
+
+
+\end{document}

@@ -1,0 +1,2 @@
+jmml@UbuntuServer $> phoronix-test-suite install pts/sudokut
+jmml@UbuntuServer $> phoronix-test-suite run pts/sudokut
