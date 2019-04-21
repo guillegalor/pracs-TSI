@@ -262,6 +262,7 @@ public class Agent extends BaseAgent {
             }
 
             // Baja la velocidad para poder ver sus movimientos
+            //DEBUG
             try{
                 Thread.sleep(50);
             }
