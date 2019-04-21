@@ -95,6 +95,7 @@ public class Agent extends BaseAgent {
                     ticks_stopped = 0;
                     ticks_sin_caminos = 0;
                     objetivo_rocas = false;
+
                 }
                 else
                     ticks_stopped++;
@@ -114,7 +115,7 @@ public class Agent extends BaseAgent {
         }
 
         if(ticks_sin_caminos > 4){
-          System.out.println("LLevamos mas de 4 ticks parados, vamos a mover pocas");
+          System.out.println("LLevamos mas de 4 ticks parados, vamos a mover rocas");
           ArrayList<Observation> posiciones_rocas = stateObs.getMovablePositions()[0];
           ArrayList<Vector2d> pos_debajo_rocas = new ArrayList<Vector2d>();
 
@@ -124,12 +125,10 @@ public class Agent extends BaseAgent {
 
           if(pos_debajo_rocas.size() > 0){
             Vector2d pos = pos_debajo_rocas.get(0);
-            int x = (int) (pos.x /stateObs.getBlockSize());
-            int y = (int) (pos.y /stateObs.getBlockSize());
 
-
-            System.out.print("Pos x rocas: " + Integer.toString(x));
-            System.out.print("Pos y rocas: " + Integer.toString(y));
+            //DEBUG
+            System.out.print("\nPos x rocas: " + Double.toString(pos.x));
+            System.out.print("\nPos y rocas: " + Double.toString(pos.y));
 
 
             Node roca_node = new Node(pos);
