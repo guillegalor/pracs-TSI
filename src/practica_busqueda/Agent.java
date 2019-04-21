@@ -15,7 +15,7 @@ public class Agent extends BaseAgent {
     //Pathfinder
     private PathFinder pf, pf_10_gemas;
     private ArrayList<Node> path  = new ArrayList<>();
-    private ArrayList<Observation>[][] grid;
+    private ArrayList<practica_busqueda.Observation>[][] grid;
 
     private Vector2d ultimaPos;
 
@@ -75,7 +75,7 @@ public class Agent extends BaseAgent {
         System.out.println("Ultima posicion: " + ultimaPos);
 
         // Actualizamos el grid
-        grid = stateObs.getObservationGrid();
+        grid = getObservationGrid(stateObs);
 
         // Actualizamos el número de gemas que tiene
         if(stateObs.getAvatarResources().isEmpty() != true){
@@ -114,35 +114,31 @@ public class Agent extends BaseAgent {
         }
 
         if(ticks_sin_caminos > 4){
-          System.out.println("LLevamos mas de 4 ticks parados, vamos a mover pocas");
-          ArrayList<Observation> posiciones_rocas = stateObs.getMovablePositions()[0];
-          ArrayList<Vector2d> pos_debajo_rocas = new ArrayList<Vector2d>();
+            System.out.println("LLevamos mas de 4 ticks parados, vamos a mover pocas");
+            ArrayList<Observation> posiciones_rocas = stateObs.getMovablePositions()[0];
+            ArrayList<Vector2d> pos_debajo_rocas = new ArrayList<Vector2d>();
 
-          for(Observation roca : posiciones_rocas){
-            pos_debajo_rocas.add( new Vector2d( (int) (roca.position.x / stateObs.getBlockSize()), (int) (roca.position.y / stateObs.getBlockSize()) +1));
-          }
+            for(Observation roca : posiciones_rocas){
+                pos_debajo_rocas.add( new Vector2d( (int) (roca.position.x / stateObs.getBlockSize()), (int) (roca.position.y / stateObs.getBlockSize()) +1));
+            }
 
-          if(pos_debajo_rocas.size() > 0){
-            Vector2d pos = pos_debajo_rocas.get(0);
-            int x = (int) (pos.x /stateObs.getBlockSize());
-            int y = (int) (pos.y /stateObs.getBlockSize());
+            if(pos_debajo_rocas.size() > 0){
+                Vector2d pos = pos_debajo_rocas.get(0);
+                int x = (int) (pos.x /stateObs.getBlockSize());
+                int y = (int) (pos.y /stateObs.getBlockSize());
 
+                System.out.print("Pos x rocas: " + Integer.toString(x));
+                System.out.print("Pos y rocas: " + Integer.toString(y));
 
-            System.out.print("Pos x rocas: " + Integer.toString(x));
-            System.out.print("Pos y rocas: " + Integer.toString(y));
+                Node roca_node = new Node(pos);
+                Node avatar_node = new Node(avatar);
 
+                path = pf.astar._findPath(avatar_node, roca_node);
+                objetivo_rocas = true;
 
-            Node roca_node = new Node(pos);
-            Node avatar_node = new Node(avatar);
+                if(path == null) System.out.print("\nPues el path de las rocas es nuuuuuuuuuul");
 
-
-            path = pf.astar._findPath(avatar_node, roca_node);
-            objetivo_rocas = true;
-
-            if(path == null) System.out.print("\nPues el path de las rocas es nuuuuuuuuuul");
-
-          }
-
+            }
 
         }
 
@@ -158,7 +154,7 @@ public class Agent extends BaseAgent {
             if(nGemas == 10){
                 // Actualizamos el grid que contiene el pathfinder
                 pf_10_gemas.state = stateObs.copy();
-                pf_10_gemas.grid = grid;
+                pf_10_gemas.grid = stateObs.getObservationGrid();
 
                 Vector2d portal;
 
@@ -181,7 +177,7 @@ public class Agent extends BaseAgent {
 
                 // Actualizamos el grid que contiene el pathfinder
                 pf.state = stateObs.copy();
-                pf.grid = grid;
+                pf.grid = stateObs.getObservationGrid();
 
                 Boolean hay_path = false;
                 int gema_objetivo = 0;
@@ -389,40 +385,120 @@ public class Agent extends BaseAgent {
         return Types.ACTIONS.ACTION_NIL;
     }
 
-    private Boolean haybichoscerca(StateObservation stateObs, Types.ACTIONS siguienteaccion){
-      StateObservation newStateObs = stateObs.copy();
-
-      Vector2d position = newStateObs.getAvatarPosition();
-      int x = (int) (position.x / fescala.x);
-      int y = (int) (position.y / fescala.y);
-
-      //newStateObs.advance(siguienteaccion);
-      switch (siguienteaccion) {
-
-          case ACTION_LEFT :
-              x = x-1;
-              break;
-          case ACTION_RIGHT :
-              x = x+1;
-              break;
-          case ACTION_UP :
-              y = y-1;
-              break;
-          case ACTION_DOWN :
-              y = y+1;
-              break;
-
-      }
-
-    for(int i = -1; i <= 1; i++){
-      for(int j = -1; j <= 1; j++){
-        for(core.game.Observation obs: newStateObs.getObservationGrid()[x+i][y+j])
-          if(obs.itype == 10 || obs.itype == 11)
+    private Boolean muere(StateObservation stateObs, Types.ACTIONS siguienteaccion){
+        StateObservation aux_stateobs = stateObs.copy();
+        if (!aux_stateobs.isAvatarAlive())
             return true;
-      }
+        else{
+            boolean muere_siempre = true;
+            int ind = 0;
+            Types.ACTIONS accion_futura;
+
+            do {
+                accion_futura = Types.ACTIONS.values()[ind];
+                aux_stateobs = stateObs.copy();
+                aux_stateobs.advance(siguienteaccion);
+                aux_stateobs.advance(accion_futura);
+                ind += 1;
+            } while (!aux_stateobs.isAvatarAlive() && ind < Types.ACTIONS.values().length);
+
+            if (aux_stateobs.isAvatarAlive()){
+                muere_siempre = false;
+            }
+
+            return muere_siempre;
+        }
     }
 
-      return false;
+    private Boolean peligroPorMonstruos(StateObservation stateObs, Types.ACTIONS siguienteaccion){
+        /*
+         * Posiciones que almacena el vector
+         *       0
+         *    1  2  3
+         * 4  5  a  6 7
+         *    8  9 10
+         *      11
+         */
+        Boolean peligro_bichos;
+
+        StateObservation futureStateObs = stateObs.copy();
+        futureStateObs.advance(siguienteaccion);
+
+        Vector2d posicion = futureStateObs.getAvatarPosition();
+        int x = (int) (posicion.x / fescala.x);
+        int y = (int) (posicion.y / fescala.y);
+
+        ArrayList<ObservationType> observaciones = new ArrayList();
+        observaciones.add(grid[x   ][y -2].get(0).getType());     // 0
+        observaciones.add(grid[x -1][y -1].get(0).getType());     // 1
+        observaciones.add(grid[x   ][y -1].get(0).getType());     // 2
+        observaciones.add(grid[x +1][y -1].get(0).getType());     // 3
+        observaciones.add(grid[x -2][ y  ].get(0).getType());     // 4
+        observaciones.add(grid[x -1][ y  ].get(0).getType());     // 5
+        observaciones.add(grid[x +1][ y  ].get(0).getType());     // 6
+        observaciones.add(grid[x +2][ y  ].get(0).getType());     // 7
+        observaciones.add(grid[x -1][y +1].get(0).getType());     // 8
+        observaciones.add(grid[x   ][y +1].get(0).getType());     // 9
+        observaciones.add(grid[x +1][y +1].get(0).getType());     // 10
+        observaciones.add(grid[x   ][y +2].get(0).getType());     // 11
+
+        // Comprueba la cruz alrededor de la siguiente posición
+        if ((observaciones.get(2) == ObservationType.BAT) || (observaciones.get(2) == ObservationType.SCORPION)) {
+            return true;
+        }
+        if ((observaciones.get(5) == ObservationType.BAT) || (observaciones.get(5) == ObservationType.SCORPION)) {
+            return true;
+        }
+        if ((observaciones.get(6) == ObservationType.BAT) || (observaciones.get(6) == ObservationType.SCORPION)) {
+            return true;
+        }
+        if ((observaciones.get(9) == ObservationType.BAT) || (observaciones.get(9) == ObservationType.SCORPION)) {
+            return true;
+        }
+
+        // Comprueba esquinas
+        if ((observaciones.get( 1 ) == ObservationType.BAT) || (observaciones.get( 1 ) == ObservationType.SCORPION)
+                &&  (observaciones.get( 2 ) == ObservationType.EMPTY || observaciones.get( 5 ) == ObservationType.EMPTY) ) {
+            return true;
+        }
+
+        if ((observaciones.get( 3 ) == ObservationType.BAT) || (observaciones.get( 3 ) == ObservationType.SCORPION)
+                &&  (observaciones.get( 2 ) == ObservationType.EMPTY || observaciones.get( 6 ) == ObservationType.EMPTY) ) {
+            return true;
+        }
+
+        if ((observaciones.get( 10 ) == ObservationType.BAT) || (observaciones.get( 10 ) == ObservationType.SCORPION)
+                &&  (observaciones.get( 9 ) == ObservationType.EMPTY || observaciones.get( 6 ) == ObservationType.EMPTY) ) {
+            return true;
+        }
+
+        if ((observaciones.get( 8 ) == ObservationType.BAT) || (observaciones.get( 8 ) == ObservationType.SCORPION)
+                &&  (observaciones.get( 9 ) == ObservationType.EMPTY || observaciones.get( 5 ) == ObservationType.EMPTY) ) {
+            return true;
+        }
+
+        // Comprueba la cruz a distancia 2
+        if ((observaciones.get( 0 ) == ObservationType.BAT) || (observaciones.get( 0 ) == ObservationType.SCORPION)
+                &&  (observaciones.get( 2 ) == ObservationType.EMPTY) ) {
+            return true;
+        }
+
+        if ((observaciones.get( 4 ) == ObservationType.BAT) || (observaciones.get( 4 ) == ObservationType.SCORPION)
+                &&  (observaciones.get( 5 ) == ObservationType.EMPTY) ) {
+            return true;
+        }
+
+        if ((observaciones.get( 7 ) == ObservationType.BAT) || (observaciones.get( 7 ) == ObservationType.SCORPION)
+                &&  (observaciones.get( 6 ) == ObservationType.EMPTY) ) {
+            return true;
+        }
+
+        if ((observaciones.get( 11 ) == ObservationType.BAT) || (observaciones.get( 11 ) == ObservationType.SCORPION)
+                &&  (observaciones.get( 9 ) == ObservationType.EMPTY) ) {
+            return true;
+        }
+
+        return false;
     }
 
     private void simularacciones(StateObservation stateObs){
