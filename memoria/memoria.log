@@ -1,4 +1,4 @@
-This is LuaTeX, Version 1.0.4 (TeX Live 2017/Debian)  (format=lualatex 2019.4.17)  20 APR 2019 21:37
+This is LuaTeX, Version 1.0.4 (TeX Live 2017/Debian)  (format=lualatex 2019.4.17)  21 APR 2019 20:24
  system commands enabled.
 **memoria.tex
 (./memoria.tex
@@ -34,7 +34,7 @@ Inserting `luaotfload.aux.set_capheight' at position 3 in `luaotfload.patch_font
 '.
 Inserting `luaotfload.rewrite_fontname' at position 4 in `luaotfload.patch_font'
 .
-luaotfload | main : initialization completed in 0.199 seconds
+luaotfload | main : initialization completed in 0.274 seconds
 Babel <3.18> and hyphenation patterns for 1 language(s) loaded.
 (/usr/share/texlive/texmf-dist/tex/latex/koma-script/scrartcl.cls
 Document Class: scrartcl 2017/09/07 v3.24 KOMA-Script document class (article)
@@ -2429,18 +2429,18 @@ Package luatex.def Info: UGR.pdf  used on input line 200.
 LaTeX Font Info:    Font shape `TU/FiraSans(0)/bx/n' will be
 (Font)              scaled to size 17.28pt on input line 204.
 LaTeX Font Info:    Font shape `TU/FiraSans(0)/m/n' will be
-(Font)              scaled to size 10.95pt on input line 213.
-LaTeX Info: Redefining \. on input line 213.
-LaTeX Info: Redefining \% on input line 213.
+(Font)              scaled to size 10.95pt on input line 242.
+LaTeX Info: Redefining \. on input line 242.
+LaTeX Info: Redefining \% on input line 242.
  [2]
-LaTeX Info: Redefining \. on input line 241.
-LaTeX Info: Redefining \% on input line 241.
+LaTeX Info: Redefining \. on input line 244.
+LaTeX Info: Redefining \% on input line 244.
  [3]
 LaTeX Font Info:    Font shape `T1/zpltlf/m/it' will be
-(Font)              scaled to size 12.0pt on input line 246.
+(Font)              scaled to size 12.0pt on input line 249.
 
 ! Undefined control sequence.
-l.249 En primer lugar, se crea un \texit
+l.252 En primer lugar, se crea un \texit
                                       {array} de posibles acciones, de las c...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -2449,7 +2449,7 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
-l.260 recorremos el \texit
+l.263 recorremos el \texit
                         {array} de posibles acciones repitiendo el proceso a...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -2458,36 +2458,36 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 LaTeX Font Info:    Font shape `T1/zpltlf/bx/n' in size <8> not available
-(Font)              Font shape `T1/zpltlf/b/n' tried instead on input line 267.
+(Font)              Font shape `T1/zpltlf/b/n' tried instead on input line 270.
 LaTeX Font Info:    Font shape `T1/zpltlf/b/n' will be
-(Font)              scaled to size 8.0pt on input line 267.
+(Font)              scaled to size 8.0pt on input line 270.
 LaTeX Font Info:    Font shape `T1/zpltlf/bx/it' in size <12> not available
-(Font)              Font shape `T1/zpltlf/b/it' tried instead on input line 287.
+(Font)              Font shape `T1/zpltlf/b/it' tried instead on input line 290.
 
 LaTeX Font Info:    Font shape `T1/zpltlf/b/it' will be
-(Font)              scaled to size 12.0pt on input line 287.
+(Font)              scaled to size 12.0pt on input line 290.
 LaTeX Font Info:    Font shape `T1/zpltlf/m/sc' will be
-(Font)              scaled to size 12.0pt on input line 303.
+(Font)              scaled to size 12.0pt on input line 306.
 Package microtype Info: Character `029' is missing
 (microtype)             in font `T1/zpltlf/m/sc/12'.
 (microtype)             Ignoring protrusion settings for this character.
 (load luc: /home/johanna/.texlive2017/texmf-var/luatex-cache/generic/fonts/otl/l
 mroman7-regular.luc)
-Overfull \hbox (12.0pt too wide) in paragraph at lines 264--304
+Overfull \hbox (12.0pt too wide) in paragraph at lines 267--307
 $[]$ 
  []
 
-LaTeX Info: Redefining \. on input line 306.
-LaTeX Info: Redefining \% on input line 306.
+LaTeX Info: Redefining \. on input line 309.
+LaTeX Info: Redefining \% on input line 309.
 [4]
 Overfull \vbox (90.95053pt too high) has occurred while \output is active []
 
-LaTeX Info: Redefining \. on input line 306.
-LaTeX Info: Redefining \% on input line 306.
+LaTeX Info: Redefining \. on input line 309.
+LaTeX Info: Redefining \% on input line 309.
 
 [5]
 ! Undefined control sequence.
-l.312 ... no encontrar un camino (A* devuelve \texit
+l.315 ... no encontrar un camino (A* devuelve \texit
                                                   {null}) se elige como
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -2495,8 +2495,24 @@ misspelled it (e.g., `\hobx'), type `I' and the correct
 spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
-LaTeX Info: Redefining \. on input line 320.
-LaTeX Info: Redefining \% on input line 320.
+! Missing $ inserted.
+<inserted text> 
+$
+l.345 
+    
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
+
+! Missing $ inserted.
+<inserted text> 
+$
+l.345 
+    
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
+
+LaTeX Info: Redefining \. on input line 350.
+LaTeX Info: Redefining \% on input line 350.
 [6] (./memoria.aux
 LaTeX Info: Redefining \. on input line 9.
 LaTeX Info: Redefining \% on input line 9.
@@ -2511,26 +2527,30 @@ LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 )
 
 Here is how much of LuaTeX's memory you used:
- 37085 strings out of 494480
+ 37087 strings out of 494480
  100000,1144653 words of node,token memory allocated
- 914 words of node memory still in use:
-   7 hlist, 2 vlist, 2 rule, 4 glue, 48 kern, 28 attribute, 74 glue_spec, 28 att
+ 928 words of node memory still in use:
+   7 hlist, 2 vlist, 2 rule, 4 glue, 50 kern, 29 attribute, 74 glue_spec, 29 att
 ribute_list, 1 write nodes
-   avail lists: 1:3,2:769,3:57,4:39,5:386,6:2950,7:588,8:95,9:269,10:13,11:421
- 39075 multiletter control sequences out of 65536+600000
+   avail lists: 1:3,2:769,3:57,4:44,5:386,6:2950,7:588,8:95,9:269,10:13,11:421
+ 39077 multiletter control sequences out of 65536+600000
  274 fonts using 32677583 bytes
  77i,18n,101p,8817b,581s stack positions out of 5000i,500n,10000p,200000b,100000s
-{/usr/share/texlive/texmf-dist/fonts/enc/dvips/newtx/ntx-ec-tlf-sc.enc}{/usr/sha
-re/texlive/texmf-dist/fonts/enc/dvips/newtx/ntx-ec-tlf.enc}</usr/share/texlive/t
-exmf-dist/fonts/opentype/public/fira/FiraSans-Regular.otf></usr/share/texlive/te
-xmf-dist/fonts/opentype/public/fira/FiraSans-Bold.otf></usr/share/texlive/texmf-
-dist/fonts/type1/public/newpx/zplb.pfb></usr/share/texlive/texmf-dist/fonts/type
-1/public/newpx/zplbi.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/newpx
-/zplr.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/newpx/zplri.pfb>
-Output written on memoria.pdf (6 pages, 189026 bytes).
+{/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}{/usr/share/texlive/t
+exmf-dist/fonts/enc/dvips/newtx/ntx-ec-tlf-sc.enc}{/usr/share/texlive/texmf-dist
+/fonts/enc/dvips/newtx/ntx-ec-tlf.enc}</usr/share/texlive/texmf-dist/fonts/opent
+ype/public/fira/FiraSans-Regular.otf></usr/share/texlive/texmf-dist/fonts/openty
+pe/public/fira/FiraSans-Bold.otf></usr/share/texlive/texmf-dist/fonts/type1/publ
+ic/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/pxfon
+ts/rpxmi.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/palatino/uplri8a.pfb
+></usr/share/texlive/texmf-dist/fonts/type1/public/newpx/zplb.pfb></usr/share/te
+xlive/texmf-dist/fonts/type1/public/newpx/zplbi.pfb></usr/share/texlive/texmf-di
+st/fonts/type1/public/newpx/zplr.pfb></usr/share/texlive/texmf-dist/fonts/type1/
+public/newpx/zplri.pfb>
+Output written on memoria.pdf (6 pages, 210323 bytes).
 
-PDF statistics: 77 PDF objects out of 1000 (max. 8388607)
- 53 compressed objects within 1 object stream
+PDF statistics: 90 PDF objects out of 1000 (max. 8388607)
+ 63 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 131072)
  16 words of extra memory for PDF output out of 10000 (max. 100000000)
 

@@ -1,5 +1,5 @@
 # Fdb version 3
-["pdflatex"] 1555789020 "memoria.tex" "memoria.pdf" "memoria" 1555789020
+["pdflatex"] 1555871087 "memoria.tex" "memoria.pdf" "memoria" 1555871087
   "/home/johanna/.texlive2017/texmf-var/luatex-cache/generic/fonts/otl/firamono-bold.luc" 1555763577 164258 338cf39aac8082a3b83bc9db4cf36c57 ""
   "/home/johanna/.texlive2017/texmf-var/luatex-cache/generic/fonts/otl/firamono-medium.luc" 1555763577 164893 b024d34f93fd05a9e801ec7442bf0334 ""
   "/home/johanna/.texlive2017/texmf-var/luatex-cache/generic/fonts/otl/firamono-regular.luc" 1555763577 164458 e5691ed051220df60ddd15a503ccf05c ""
@@ -74,10 +74,13 @@
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/txfonts/txsya.tfm" 1480098718 972 2c9ffac4bbd20f91c01aaef9bf3f8710 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/txfonts/txsyb.tfm" 1480098718 988 098ca7e8cc5647b9ac21b82dbdce1f01 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/txfonts/txsyc.tfm" 1480098718 1084 75e807e9e71f7a312e4e1187dce5e93b ""
+  "/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb" 1480098733 32722 d7379af29a190c3f453aba36302ff5a9 ""
   "/usr/share/texlive/texmf-dist/fonts/type1/public/newpx/zplb.pfb" 1480098744 197081 a8cfb0c0b62f3989a2799951d0751d47 ""
   "/usr/share/texlive/texmf-dist/fonts/type1/public/newpx/zplbi.pfb" 1480098744 204097 dc0b927cf21dcadc4a097662b18a2368 ""
   "/usr/share/texlive/texmf-dist/fonts/type1/public/newpx/zplr.pfb" 1480098744 199307 14308222b906ee98024ec531171ef49e ""
   "/usr/share/texlive/texmf-dist/fonts/type1/public/newpx/zplri.pfb" 1480098744 206482 8fb0f4dbfe4659d48567ae598ad0ada0 ""
+  "/usr/share/texlive/texmf-dist/fonts/type1/public/pxfonts/rpxmi.pfb" 1480098744 14672 0093e684026e66eef888939395e1a17d ""
+  "/usr/share/texlive/texmf-dist/fonts/type1/urw/palatino/uplri8a.pfb" 1480098746 50022 90249cba7e3e4e9845f80328d6f9bd13 ""
   "/usr/share/texlive/texmf-dist/fonts/vf/public/newpx/zplexa.vf" 1487030464 544 e198c5ab051d4e34d62bb97fe59b454f ""
   "/usr/share/texlive/texmf-dist/fonts/vf/public/newpx/zplexx.vf" 1480098768 1308 008fdb91ea46e5a26848b9a9c07d2e15 ""
   "/usr/share/texlive/texmf-dist/fonts/vf/public/newpx/zplmi.vf" 1480098768 1336 492b8b7066e2c7cbe76e2f594f9d4aff ""
@@ -300,11 +303,11 @@
   "/var/lib/texmf/tex/generic/config/language.dat" 1555524675 5068 4c1109cc42e33c2c023d18144229fac4 ""
   "/var/lib/texmf/web2c/luatex/lualatex.fmt" 1555524706 1349092 047a1e4e292ef07ef16dc61e27494441 ""
   "UGR.pdf" 1521454859 87979 4cdc00598455ee25e3259c10d4c63df9 ""
-  "memoria.aux" 1555789001 678 5ba646d1e738fd82ded2e79120f66df4 ""
-  "memoria.tex" 1555789018 10030 81a9a12995a8e165a71a6ed3703d6093 ""
+  "memoria.aux" 1555871078 678 d7bd3c2dd8a4d5cd2621b92f5a2d11be ""
+  "memoria.tex" 1555871086 11208 9856752cdb522c56188d26fedf1711e4 ""
   (generated)
-  "memoria.aux"
+  "memoria.log"
   "memoria.pdf"
+  "memoria.aux"
   "memoria.toc"
   "memoria.listing"
-  "memoria.log"
