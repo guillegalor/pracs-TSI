@@ -23,6 +23,7 @@ public class Agent extends BaseAgent {
     private Vector2d fescala;
     private Boolean actualizarmapa = true;
     private int nGemas = 0;
+    private int nRocas = 0;
     private int ticks_stopped = 0;
     private int ticks_sin_caminos = 0;
     private Boolean objetivo_rocas = false;
@@ -123,8 +124,11 @@ public class Agent extends BaseAgent {
             pos_debajo_rocas.add( new Vector2d( (int) (roca.position.x / stateObs.getBlockSize()), (int) (roca.position.y / stateObs.getBlockSize()) +1));
           }
 
-          if(pos_debajo_rocas.size() > 0){
-            Vector2d pos = pos_debajo_rocas.get(0);
+          System.out.print("\nRocas movibles: " + Integer.toString(pos_debajo_rocas.size()));
+          System.out.print("\nnRocas: " + Integer.toString(nRocas));
+
+          if(pos_debajo_rocas.size() > nRocas){
+            Vector2d pos = pos_debajo_rocas.get(nRocas);
 
             //DEBUG
             System.out.print("\nPos x rocas: " + Double.toString(pos.x));
@@ -138,7 +142,28 @@ public class Agent extends BaseAgent {
             path = pf.astar._findPath(avatar_node, roca_node);
             objetivo_rocas = true;
 
-            if(path == null) System.out.print("\nPues el path de las rocas es nuuuuuuuuuul");
+            if(path == null){
+              System.out.print("\nPues el path de las rocas es nuuuuuuuuuul");
+              nRocas ++;
+            }
+
+            //DEBUG
+            grid = stateObs.getObservationGrid();
+
+            pf.state = stateObs.copy();
+            pf.grid = grid;
+
+            System.out.println(grid.length);
+            System.out.println(grid[0].length);
+            for(int i = 0; i < grid.length; ++i){
+                System.out.print("\n");
+                for(int j = 0; j < grid[i].length; ++j){
+                    if(!grid[i][j].isEmpty())
+                        System.out.print(Integer.toString(grid[i][j].get(0).itype) + "\t");
+                    else
+                        System.out.print("," + "\t");
+                }
+            }
 
           }
 
