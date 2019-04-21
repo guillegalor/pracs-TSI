@@ -24,6 +24,8 @@ public class Agent extends BaseAgent {
     private Boolean actualizarmapa = true;
     private int nGemas = 0;
     private int ticks_stopped = 0;
+    private int ticks_sin_caminos = 0;
+    private Boolean objetivo_rocas = false;
 
     public Agent(StateObservation stateObs, ElapsedCpuTimer elapsedTimer) {
         super(stateObs, elapsedTimer);
@@ -91,6 +93,8 @@ public class Agent extends BaseAgent {
                 if ((avatar.x != ultimaPos.x) || (avatar.y != ultimaPos.y)){
                     path.remove(0);
                     ticks_stopped = 0;
+                    ticks_sin_caminos = 0;
+                    objetivo_rocas = false;
                 }
                 else
                     ticks_stopped++;
@@ -109,8 +113,41 @@ public class Agent extends BaseAgent {
             actualizarmapa = true;
         }
 
+        if(ticks_sin_caminos > 4){
+          System.out.println("LLevamos mas de 4 ticks parados, vamos a mover pocas");
+          ArrayList<Observation> posiciones_rocas = stateObs.getMovablePositions()[0];
+          ArrayList<Vector2d> pos_debajo_rocas = new ArrayList<Vector2d>();
+
+          for(Observation roca : posiciones_rocas){
+            pos_debajo_rocas.add( new Vector2d( (int) (roca.position.x / stateObs.getBlockSize()), (int) (roca.position.y / stateObs.getBlockSize()) +1));
+          }
+
+          if(pos_debajo_rocas.size() > 0){
+            Vector2d pos = pos_debajo_rocas.get(0);
+            int x = (int) (pos.x /stateObs.getBlockSize());
+            int y = (int) (pos.y /stateObs.getBlockSize());
+
+
+            System.out.print("Pos x rocas: " + Integer.toString(x));
+            System.out.print("Pos y rocas: " + Integer.toString(y));
+
+
+            Node roca_node = new Node(pos);
+            Node avatar_node = new Node(avatar);
+
+
+            path = pf.astar._findPath(avatar_node, roca_node);
+            objetivo_rocas = true;
+
+            if(path == null) System.out.print("\nPues el path de las rocas es nuuuuuuuuuul");
+
+          }
+
+
+        }
+
         //Si no hay un plan de ruta calculado...
-        if(actualizarmapa){
+        if(actualizarmapa && !objetivo_rocas){
             actualizarmapa = false;
             // DEBUG
             System.out.print("\nRecalculando caminos ---------------");
@@ -217,6 +254,7 @@ public class Agent extends BaseAgent {
         if(path == null){
             actualizarmapa = true;
             Types.ACTIONS siguienteaccion = Types.ACTIONS.ACTION_NIL;
+            ticks_sin_caminos ++;
 
             //DEBUG
             System.out.print("\nPath es null.");
