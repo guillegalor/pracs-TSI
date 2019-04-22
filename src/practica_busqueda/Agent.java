@@ -142,22 +142,23 @@ public class Agent extends BaseAgent {
                 }
 
                 //DEBUG
-                /*
+                ArrayList<Observation>[][] grid2 = stateObs.getObservationGrid();
+
                 pf.state = stateObs.copy();
                 pf.grid = stateObs.getObservationGrid();
 
-                System.out.println(grid.length);
-                System.out.println(grid[0].length);
-                for(int i = 0; i < grid.length; ++i){
+                System.out.println(grid2.length);
+                System.out.println(grid2[0].length);
+                for(int i = 0; i < grid2.length; ++i){
                     System.out.print("\n");
-                    for(int j = 0; j < grid[i].length; ++j){
-                        if(!grid[i][j].isEmpty())
-                          System.out.print(Integer.toString(grid[i][j].get(0).itype + "\t");
+                    for(int j = 0; j < grid2[i].length; ++j){
+                        if(!grid2[i][j].isEmpty())
+                          System.out.print(Integer.toString(grid2[i][j].get(0).itype) + "\t");
                         else
                           System.out.print("," + "\t");
                         }
                     }
-                    */
+
                 }
 
 
