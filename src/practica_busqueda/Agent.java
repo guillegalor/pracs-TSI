@@ -27,6 +27,7 @@ public class Agent extends BaseAgent {
     private int ticks_stopped = 0;
     private int ticks_sin_caminos = 0;
     private Boolean objetivo_rocas = false;
+    private boolean debug = false;
 
     public Agent(StateObservation stateObs, ElapsedCpuTimer elapsedTimer) {
         super(stateObs, elapsedTimer);
@@ -70,10 +71,11 @@ public class Agent extends BaseAgent {
         Vector2d avatar =  new Vector2d(stateObs.getAvatarPosition().x / fescala.x,
                 stateObs.getAvatarPosition().y / fescala.y);
 
-        // DEBUG
-        System.out.println("\n---------------------");
-        System.out.println("Posicion del avatar: " + avatar.toString());
-        System.out.println("Ultima posicion: " + ultimaPos);
+        if (debug){
+            System.out.println("\n---------------------");
+            System.out.println("Posicion del avatar: " + avatar.toString());
+            System.out.println("Ultima posicion: " + ultimaPos);
+        }
 
         // Actualizamos el grid
         grid = getObservationGrid(stateObs);
@@ -83,8 +85,8 @@ public class Agent extends BaseAgent {
             if(nGemas != stateObs.getAvatarResources().get(6)){
                 nGemas++;
                 actualizarmapa = true;
-                // DEBUG
-                System.out.println("Cogemos una gema y actualizamos los caminos");
+                if (debug)
+                    System.out.println("Cogemos una gema y actualizamos los caminos");
             }
         }
 
@@ -102,16 +104,19 @@ public class Agent extends BaseAgent {
                     ticks_stopped++;
             } else {
                 actualizarmapa = true;
-                System.out.println("Path estaba vacio luego actualizamos");
+                if (debug)
+                    System.out.println("Path estaba vacio luego actualizamos");
             }
         } else {
             path = new ArrayList<>();
             actualizarmapa = true;
-            System.out.println("Path era null luego actualizamos");
+            if (debug)
+                System.out.println("Path era null luego actualizamos");
         }
 
         if(ticks_stopped > 2){
-            System.out.println("Llevamos mas de dos ticks parados, luego actualizamos los caminos");
+            if (debug)
+                System.out.println("Llevamos mas de dos ticks parados, luego actualizamos los caminos");
             actualizarmapa = true;
         }
 
@@ -165,8 +170,8 @@ public class Agent extends BaseAgent {
         //Si no hay un plan de ruta calculado...
         if(actualizarmapa ){    // && !objetivo_rocas
             actualizarmapa = false;
-            // DEBUG
-            System.out.print("\nRecalculando caminos ---------------");
+            if (debug)
+                System.out.print("\nRecalculando caminos ---------------");
 
             Node avatar_node = new Node(avatar);
 
@@ -211,7 +216,7 @@ public class Agent extends BaseAgent {
 
                     gema.x = gema.x / fescala.x;
                     gema.y = gema.y / fescala.y;
-                    path = pf.getPath(avatar, gema);
+                    path = pf.astar._findPath(new Node(avatar), new Node(gema));
 
                     if(path != null)
                         path_lengths.add(path.size());
@@ -246,11 +251,11 @@ public class Agent extends BaseAgent {
 
                     Node gema_node = new Node(gema);
 
-                    // DEBUG
-                    System.out.print("\nGema siguiente:");
-
-                    System.out.print(Double.toString(gema.x) + ", ");
-                    System.out.print(Double.toString(gema.y) + "\n");
+                    if (debug){
+                        System.out.print("\nGema siguiente:");
+                        System.out.print(Double.toString(gema.x) + ", ");
+                        System.out.print(Double.toString(gema.y) + "\n");
+                    }
 
                     //Calculamos un camino desde la posicion del avatar a la posicion de la gema
                     path = pf.astar._findPath(avatar_node, gema_node);
@@ -258,8 +263,8 @@ public class Agent extends BaseAgent {
                     //Comprobamos si hay camino a dicha gema
                     hay_path = (path != null) && (!path.isEmpty());
 
-                    // DEBUG
-                    System.out.println("\nHay camino a la gema " + Integer.toString(gema_objetivo) + "? " + Boolean.toString(hay_path));
+                    if (debug)
+                        System.out.println("\nHay camino a la gema " + Integer.toString(gema_objetivo) + "? " + Boolean.toString(hay_path));
 
                     if (!hay_path) gema_objetivo++;
                 }
@@ -271,8 +276,8 @@ public class Agent extends BaseAgent {
             Types.ACTIONS siguienteaccion = Types.ACTIONS.ACTION_NIL;
             //ticks_sin_caminos ++;
 
-            //DEBUG
-            System.out.print("\nPath es null.");
+            if (debug)
+                System.out.print("\nPath es null.");
 
             //Si la siguiente accion es peligrosa la cambia sino la deja tal cual
             siguienteaccion = esPeligrosa(stateObs, siguienteaccion);
@@ -302,10 +307,11 @@ public class Agent extends BaseAgent {
             //Se actualiza la ultima posicion del avatar
             ultimaPos = avatar;
 
-            // DEBUG Muestra siguiente acción, posición actual, etc
-            System.out.print("\nSiguiente posicion:");
-            System.out.print(Double.toString(siguientePos.position.x) + ", ");
-            System.out.print(Double.toString(siguientePos.position.y) + "\n");
+            if (debug){
+                System.out.print("\nSiguiente posicion:");
+                System.out.print(Double.toString(siguientePos.position.x) + ", ");
+                System.out.print(Double.toString(siguientePos.position.y) + "\n");
+            }
 
             //Si la siguiente accion es peligrosa la cambia sino la deja tal cual
             Types.ACTIONS aux_accion = esPeligrosa(stateObs, siguienteaccion);
@@ -315,14 +321,16 @@ public class Agent extends BaseAgent {
             }
 
             // Baja la velocidad para poder ver sus movimientos
-            //DEBUG
-            try{
-                Thread.sleep(100);
+            if (debug){
+                try{
+                    Thread.sleep(100);
+                }
+                catch(Exception e){}
             }
-            catch(Exception e){}
 
             //DEBUG
-            System.out.print(siguienteaccion.toString());
+            if (debug)
+                System.out.print(siguienteaccion.toString());
             //Se devuelve la accion deseada
             return siguienteaccion;
         }
@@ -342,22 +350,22 @@ public class Agent extends BaseAgent {
         int x = (int) (posicion.x / fescala.x);
         int y = (int) (posicion.y / fescala.y);
 
-        if (grid[x-1][y].get(0).getType() == ObservationType.WALL
+        if (grid[x-1][y].get(0).getType() == ObservationType.GROUND
                 || grid[x-1][y].get(0).getType() == ObservationType.EMPTY
                 || grid[x-1][y].get(0).getType() == ObservationType.GEM)
             posibles_acciones.add(Types.ACTIONS.ACTION_LEFT);
 
-        if (grid[x+1][y].get(0).getType() == ObservationType.WALL
+        if (grid[x+1][y].get(0).getType() == ObservationType.GROUND
                 || grid[x+1][y].get(0).getType() == ObservationType.EMPTY
                 || grid[x+1][y].get(0).getType() == ObservationType.GEM)
         posibles_acciones.add(Types.ACTIONS.ACTION_RIGHT);
 
-        if (grid[x][y-1].get(0).getType() == ObservationType.WALL
+        if (grid[x][y-1].get(0).getType() == ObservationType.GROUND
                 || grid[x][y-1].get(0).getType() == ObservationType.EMPTY
                 || grid[x][y-1].get(0).getType() == ObservationType.GEM)
         posibles_acciones.add(Types.ACTIONS.ACTION_UP);
 
-        if (grid[x][y+1].get(0).getType() == ObservationType.WALL
+        if (grid[x][y+1].get(0).getType() == ObservationType.GROUND
                 || grid[x][y+1].get(0).getType() == ObservationType.EMPTY
                 || grid[x][y+1].get(0).getType() == ObservationType.GEM)
         posibles_acciones.add(Types.ACTIONS.ACTION_DOWN);
@@ -380,7 +388,8 @@ public class Agent extends BaseAgent {
                 return accion_candidata;
         }
 
-        System.out.print("Ninguna acción es segura y es segura respecto a los monstruos");
+        if (debug)
+            System.out.print("Ninguna acción es segura y es segura respecto a los monstruos");
         return Types.ACTIONS.ACTION_NIL;
     }
 
