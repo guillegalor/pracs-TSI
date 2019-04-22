@@ -216,7 +216,7 @@ public class Agent extends BaseAgent {
 
                     gema.x = gema.x / fescala.x;
                     gema.y = gema.y / fescala.y;
-                    path = pf.astar._findPath(new Node(avatar), new Node(gema));
+                    path = pf.getPath(avatar, gema);
 
                     if(path != null)
                         path_lengths.add(path.size());
@@ -358,19 +358,17 @@ public class Agent extends BaseAgent {
         if (grid[x+1][y].get(0).getType() == ObservationType.GROUND
                 || grid[x+1][y].get(0).getType() == ObservationType.EMPTY
                 || grid[x+1][y].get(0).getType() == ObservationType.GEM)
-        posibles_acciones.add(Types.ACTIONS.ACTION_RIGHT);
+            posibles_acciones.add(Types.ACTIONS.ACTION_RIGHT);
 
         if (grid[x][y-1].get(0).getType() == ObservationType.GROUND
                 || grid[x][y-1].get(0).getType() == ObservationType.EMPTY
                 || grid[x][y-1].get(0).getType() == ObservationType.GEM)
-        posibles_acciones.add(Types.ACTIONS.ACTION_UP);
+            posibles_acciones.add(Types.ACTIONS.ACTION_UP);
 
         if (grid[x][y+1].get(0).getType() == ObservationType.GROUND
                 || grid[x][y+1].get(0).getType() == ObservationType.EMPTY
                 || grid[x][y+1].get(0).getType() == ObservationType.GEM)
-        posibles_acciones.add(Types.ACTIONS.ACTION_DOWN);
-
-        boolean peligro = false;
+            posibles_acciones.add(Types.ACTIONS.ACTION_DOWN); boolean peligro = false;
 
         StateObservation aux_stateobs = stateObs.copy();
         aux_stateobs.advance(siguienteaccion);

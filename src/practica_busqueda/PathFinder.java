@@ -7,10 +7,14 @@ import tools.Vector2d;
 
 import java.util.ArrayList;
 
+// import org.w3c.dom.Node;
+
 /**
  * Created by dperez on 14/01/16.
  */
 public class PathFinder {
+
+    public ArrayList<Node> obstaculos;
 
     public AStar astar;
     public StateObservation state;
@@ -35,6 +39,7 @@ public class PathFinder {
         this.state = stateObs;
         this.grid = stateObs.getObservationGrid();
         this.astar = new AStar(this);
+        this.obstaculos = new ArrayList<Node>();
 
         init();
         runAll();
@@ -123,7 +128,12 @@ public class PathFinder {
         {
             if(!isObstacle(x+x_arrNeig[i], y+y_arrNeig[i]))
             {
-                neighbours.add(new Node(new Vector2d(x+x_arrNeig[i], y+y_arrNeig[i])));
+                Node n = new Node(new Vector2d(x+x_arrNeig[i], y+y_arrNeig[i]));
+
+                if (obstaculos.contains(n))
+                    continue;
+
+                neighbours.add(n);
             }
         }
 
