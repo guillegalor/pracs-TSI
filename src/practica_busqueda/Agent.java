@@ -66,12 +66,9 @@ public class Agent extends BaseAgent {
 
     @Override
     public Types.ACTIONS act(StateObservation stateObs, ElapsedCpuTimer elapsedTimer){
-
         // Obtenemos la posicion del avatar
         Vector2d avatar =  new Vector2d(stateObs.getAvatarPosition().x / fescala.x,
                 stateObs.getAvatarPosition().y / fescala.y);
-        // Nodo con la posición del avatar
-        Node avatar_node = new Node(avatar);
 
         // DEBUG
         System.out.println("\n---------------------");
@@ -97,8 +94,8 @@ public class Agent extends BaseAgent {
                 if ((avatar.x != ultimaPos.x) || (avatar.y != ultimaPos.y)){
                     path.remove(0);
                     ticks_stopped = 0;
-                    ticks_sin_caminos = 0;
-                    objetivo_rocas = false;
+                  //  ticks_sin_caminos = 0;
+                  //  objetivo_rocas = false;
 
                 }
                 else
@@ -171,6 +168,8 @@ public class Agent extends BaseAgent {
             // DEBUG
             System.out.print("\nRecalculando caminos ---------------");
 
+            Node avatar_node = new Node(avatar);
+
             //Si ya tiene todas las gemas se calcula uno al portal mas cercano. Si no se calcula a la gema mas cercana
             if(nGemas == 10){
                 // Actualizamos el grid que contiene el pathfinder
@@ -195,46 +194,6 @@ public class Agent extends BaseAgent {
                 path = pf_10_gemas.astar._findPath(avatar_node, portal_node);
             }
             else{
-
-//<<<<<<< HEAD
-//            System.out.print("\nRocas movibles: " + Integer.toString(pos_debajo_rocas.size()));
-//            System.out.print("\nnRocas: " + Integer.toString(nRocas));
-
-//            if(pos_debajo_rocas.size() > nRocas){
-//                Vector2d pos = pos_debajo_rocas.get(nRocas);
-
-//                System.out.print("Pos x rocas: " + Double.toString(pos.x ));
-//                System.out.print("Pos y rocas: " + Double.toString(pos.y));
-
-//                Node roca_node = new Node(pos);
-//                Node avatar_node = new Node(avatar);
-
-//                if(path == null){
-//                  System.out.print("\nPues el path de las rocas es nuuuuuuuuuul");
-//                  nRocas ++;
-//                }
-
-//                //DEBUG
-//                ArrayList<Observation>[][] grid2 = stateObs.getObservationGrid();
-
-//                pf.state = stateObs.copy();
-//                pf.grid = stateObs.getObservationGrid();
-
-//                System.out.println(grid2.length);
-//                System.out.println(grid2[0].length);
-//                for(int i = 0; i < grid2.length; ++i){
-//                    System.out.print("\n");
-//                    for(int j = 0; j < grid2[i].length; ++j){
-//                        if(!grid2[i][j].isEmpty())
-//                          System.out.print(Integer.toString(grid2[i][j].get(0).itype) + "\t");
-//                        else
-//                          System.out.print("," + "\t");
-//                        }
-//                    }
-
-//                }
-
-//=======
                 // Actualizamos el grid que contiene el pathfinder
                 pf.state = stateObs.copy();
                 pf.grid = stateObs.getObservationGrid();
@@ -252,9 +211,7 @@ public class Agent extends BaseAgent {
 
                     gema.x = gema.x / fescala.x;
                     gema.y = gema.y / fescala.y;
-                    Node gema_node = new Node(gema);
-
-                    path = pf.astar._findPath(avatar_node, gema_node);
+                    path = pf.getPath(avatar, gema);
 
                     if(path != null)
                         path_lengths.add(path.size());
@@ -312,7 +269,7 @@ public class Agent extends BaseAgent {
         if(path == null){
             actualizarmapa = true;
             Types.ACTIONS siguienteaccion = Types.ACTIONS.ACTION_NIL;
-            ticks_sin_caminos ++;
+            //ticks_sin_caminos ++;
 
             //DEBUG
             System.out.print("\nPath es null.");
@@ -353,7 +310,6 @@ public class Agent extends BaseAgent {
             //Si la siguiente accion es peligrosa la cambia sino la deja tal cual
             Types.ACTIONS aux_accion = esPeligrosa(stateObs, siguienteaccion);
             if (aux_accion != siguienteaccion) {
-                System.out.println("Cambia la accion");
                 siguienteaccion = aux_accion;
                 actualizarmapa = true;
             }
@@ -386,22 +342,22 @@ public class Agent extends BaseAgent {
         int x = (int) (posicion.x / fescala.x);
         int y = (int) (posicion.y / fescala.y);
 
-        if (grid[x-1][y].get(0).getType() == ObservationType.GROUND
+        if (grid[x-1][y].get(0).getType() == ObservationType.WALL
                 || grid[x-1][y].get(0).getType() == ObservationType.EMPTY
                 || grid[x-1][y].get(0).getType() == ObservationType.GEM)
             posibles_acciones.add(Types.ACTIONS.ACTION_LEFT);
 
-        if (grid[x+1][y].get(0).getType() == ObservationType.GROUND
+        if (grid[x+1][y].get(0).getType() == ObservationType.WALL
                 || grid[x+1][y].get(0).getType() == ObservationType.EMPTY
                 || grid[x+1][y].get(0).getType() == ObservationType.GEM)
         posibles_acciones.add(Types.ACTIONS.ACTION_RIGHT);
 
-        if (grid[x][y-1].get(0).getType() == ObservationType.GROUND
+        if (grid[x][y-1].get(0).getType() == ObservationType.WALL
                 || grid[x][y-1].get(0).getType() == ObservationType.EMPTY
                 || grid[x][y-1].get(0).getType() == ObservationType.GEM)
         posibles_acciones.add(Types.ACTIONS.ACTION_UP);
 
-        if (grid[x][y+1].get(0).getType() == ObservationType.GROUND
+        if (grid[x][y+1].get(0).getType() == ObservationType.WALL
                 || grid[x][y+1].get(0).getType() == ObservationType.EMPTY
                 || grid[x][y+1].get(0).getType() == ObservationType.GEM)
         posibles_acciones.add(Types.ACTIONS.ACTION_DOWN);
