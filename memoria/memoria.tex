@@ -192,8 +192,8 @@
 
 \renewcommand{\proofname}{\normalfont\sffamily\bfseries\small DEMOSTRACIÓN}
 
-\title{Práctica 1}
-\subject{T.S.I.}
+\title{Memoria práctica 1}
+\subject{Técnicas de los Sistemas Inteligentes}
 \author{Johanna Capote Robayna \\ Guillermo Galindo Ortuño}
 \publishers{\vspace{2cm}\includegraphics[height=2.5cm]{UGR}\vspace{1cm}}
 \maketitle
@@ -201,18 +201,17 @@
 
 \newpage
 
-\section{Introducción}
+\section{Descripción general de la solución}
 
 En esta práctica se nos pedía programar un controlador del entorno GVG\_AI capaz
-de guiar a un avatar que fuera capaz de pasar los distintos niveles del juego.
-Este avatar aparte de un comportamiento deliberativo basado en el algoritmo A*
-debía ser capaz de esquivar a los enemigos mediante un comportamiento reactivo.
+de guiar a un avatar que fuera capaz de pasar los distintos niveles del juego
+\texit{Boulder Dash}. Este avatar aparte de un comportamiento deliberativo basado
+en el algoritmo A* debía ser capaz de esquivar a los enemigos mediante un
+comportamiento reactivo.
 
 Esta memoria se dicidirá en tres partes, una descripción general de la solución,
 otra del comportammiento reactiva y la última explicara el comportamiento deliverativo.
-\newpage
 
-\section{Descripción general de la solución}
 El esquema general del comportamiento del avatar es el siguiente:
 \begin{itemize}
 \item La estrategia de búsqueda consiste en ordenar las gemas según la longitud del camino que el algoritmo A*
@@ -220,7 +219,9 @@ proporciona para llegar a cada una de ellas, con esto se busca optimizar el
 tiempo, ya que no siempre la gema más cercana al avatar tiene el camino más corto.
 
 \item El avatar comienza con un comportamiento deliberativo, donde va recolectando
-las gemas en el orden proporcionado.
+las gemas en el orden proporcionado, cuando ya obtiene las gemas necesarias para
+pasar de nivel, llama de nuevo al algoritmo A* para encontrar el camino más corto
+hacia el portal y así superar el nivel.
 
 \item En caso de que el avatar detecte que pueda morir en el siguiente movimiento
 se activa el comportamiento reactivo, con el que se busca que el agente
@@ -236,6 +237,10 @@ proporcionados era uno de los principales problemas a resolver. El hecho de que
 el mapa pueda cambiar con el desprendimiento de rocas y la aprición de enemigos
 que puedan provocar la muerte del avatar, hacen que este sea el principal objetivo
 a resolver.
+
+\item Por último si pasa más de 4 turnos sin encontrar ningún camino hacia alguna
+gema, el avatar cambia de objetivo y se dirige a la piedra movible más cercana con
+la intención de que se mueva y abrá un nuevo camino hacia alguna gema.
 \end{itemize}
 
 \newpage
@@ -313,7 +318,34 @@ En caso de no encontrar un camino (A* devuelve \texit{null}) se elige como
 siguiente acción \textit{NIL} y se llama a la función \textit{esPeligrosa}
 para garantizar que no muera en el siguiente movimiento.
 
+Por otro lado, si el avatar pasa más de dos movimientos devolviendo la acción
+\textit{NIL}, el mapa se actualiza, por si ha habido algún desprendimiento de
+una piedra abriendo un nuevo camino.
 
+Por último, si el avatar pasa más de 4 movimientos en el que el algoritmo A*
+devuelve \textit{null} el avatar cambia de objetivo y busca el primer objeto
+movible del mapa, y se dirije a la casilla que se encuentra justo debajo. En
+caso de no encontrar un camino hacia esta \textit{roca objetivo} cambia de
+roca (\textbf{nRocas}).
+
+\begin{algorithm}
+\If{ticks\_sin\_caminos > 4}{
+  posiciones\_rocas = stateObs.getMovablePositions()\;
+
+  \For{roca \textbf{in} posiciones\_rocas}{
+    pos\_debajo\_rocas.add( roca.position.x , roca.position.y +1) \;
+  }
+
+  \If{pos\_debajo\_rocas.size() > nRocas}{
+    pos = pos\_debajo\_rocas.get(nRocas)\;
+
+    path = pf.astar._findePath(avatar, pos)\;
+
+    if{path == null}{ nRocas ++ \;}
+  }
+}
+
+\end{algorithm}
 %printbibliography
 
 
