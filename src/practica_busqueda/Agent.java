@@ -115,57 +115,55 @@ public class Agent extends BaseAgent {
             actualizarmapa = true;
         }
 
-        if(ticks_sin_caminos > 4){
-            System.out.println("LLevamos mas de 4 ticks parados, vamos a mover rocas");
-            ArrayList<Observation> posiciones_rocas = stateObs.getMovablePositions()[0];
-            ArrayList<Vector2d> pos_debajo_rocas = new ArrayList<Vector2d>();
+        //if(ticks_sin_caminos > 4){
+        //    System.out.println("LLevamos mas de 4 ticks parados, vamos a mover rocas");
+        //    ArrayList<Observation> posiciones_rocas = stateObs.getMovablePositions()[0];
+        //    ArrayList<Vector2d> pos_debajo_rocas = new ArrayList<Vector2d>();
 
-            for(Observation roca : posiciones_rocas){
-                pos_debajo_rocas.add( new Vector2d( (int) (roca.position.x / stateObs.getBlockSize()), (int) (roca.position.y / stateObs.getBlockSize()) +1));
-            }
+        //    for(Observation roca : posiciones_rocas){
+        //        pos_debajo_rocas.add( new Vector2d( (int) (roca.position.x / stateObs.getBlockSize()), (int) (roca.position.y / stateObs.getBlockSize()) +1));
+        //    }
 
-            System.out.print("\nRocas movibles: " + Integer.toString(pos_debajo_rocas.size()));
-            System.out.print("\nnRocas: " + Integer.toString(nRocas));
+        //    System.out.print("\nRocas movibles: " + Integer.toString(pos_debajo_rocas.size()));
+        //    System.out.print("\nnRocas: " + Integer.toString(nRocas));
 
-            if(pos_debajo_rocas.size() > nRocas){
-                Vector2d pos = pos_debajo_rocas.get(nRocas);
+        //    if(pos_debajo_rocas.size() > nRocas){
+        //        Vector2d pos = pos_debajo_rocas.get(nRocas);
 
-                System.out.print("Pos x rocas: " + Double.toString(pos.x ));
-                System.out.print("Pos y rocas: " + Double.toString(pos.y));
+        //        System.out.print("Pos x rocas: " + Double.toString(pos.x ));
+        //        System.out.print("Pos y rocas: " + Double.toString(pos.y));
 
-                Node roca_node = new Node(pos);
-                Node avatar_node = new Node(avatar);
+        //        Node roca_node = new Node(pos);
+        //        Node avatar_node = new Node(avatar);
 
-                if(path == null){
-                  System.out.print("\nPues el path de las rocas es nuuuuuuuuuul");
-                  nRocas ++;
-                }
+        //        if(path == null){
+        //          System.out.print("\nPues el path de las rocas es nuuuuuuuuuul");
+        //          nRocas ++;
+        //        }
 
-                //DEBUG
-                /*
-                pf.state = stateObs.copy();
-                pf.grid = stateObs.getObservationGrid();
+        //        //DEBUG
+        //        /*
+        //        pf.state = stateObs.copy();
+        //        pf.grid = stateObs.getObservationGrid();
 
-                System.out.println(grid.length);
-                System.out.println(grid[0].length);
-                for(int i = 0; i < grid.length; ++i){
-                    System.out.print("\n");
-                    for(int j = 0; j < grid[i].length; ++j){
-                        if(!grid[i][j].isEmpty())
-                          System.out.print(Integer.toString(grid[i][j].get(0).itype + "\t");
-                        else
-                          System.out.print("," + "\t");
-                        }
-                    }
-                    */
-                }
+        //        System.out.println(grid.length);
+        //        System.out.println(grid[0].length);
+        //        for(int i = 0; i < grid.length; ++i){
+        //            System.out.print("\n");
+        //            for(int j = 0; j < grid[i].length; ++j){
+        //                if(!grid[i][j].isEmpty())
+        //                  System.out.print(Integer.toString(grid[i][j].get(0).itype + "\t");
+        //                else
+        //                  System.out.print("," + "\t");
+        //                }
+        //            }
+        //            */
+        //        }
 
-
-            }
-        }
+        //    }
 
         //Si no hay un plan de ruta calculado...
-        if(actualizarmapa && !objetivo_rocas){
+        if(actualizarmapa ){    // && !objetivo_rocas
             actualizarmapa = false;
             // DEBUG
             System.out.print("\nRecalculando caminos ---------------");
@@ -340,10 +338,30 @@ public class Agent extends BaseAgent {
 
         // Array con las posibles acciones
         ArrayList<Types.ACTIONS> posibles_acciones = new ArrayList();
-        posibles_acciones.add(Types.ACTIONS.ACTION_LEFT);
+
+        Vector2d posicion = stateObs.getAvatarPosition();
+        int x = (int) (posicion.x / fescala.x);
+        int y = (int) (posicion.y / fescala.y);
+
+        if (grid[x-1][y].get(0).getType() == ObservationType.WALL
+                || grid[x-1][y].get(0).getType() == ObservationType.EMPTY
+                || grid[x-1][y].get(0).getType() == ObservationType.GEM)
+            posibles_acciones.add(Types.ACTIONS.ACTION_LEFT);
+
+        if (grid[x+1][y].get(0).getType() == ObservationType.WALL
+                || grid[x+1][y].get(0).getType() == ObservationType.EMPTY
+                || grid[x+1][y].get(0).getType() == ObservationType.GEM)
         posibles_acciones.add(Types.ACTIONS.ACTION_RIGHT);
-        posibles_acciones.add(Types.ACTIONS.ACTION_DOWN);
+
+        if (grid[x][y-1].get(0).getType() == ObservationType.WALL
+                || grid[x][y-1].get(0).getType() == ObservationType.EMPTY
+                || grid[x][y-1].get(0).getType() == ObservationType.GEM)
         posibles_acciones.add(Types.ACTIONS.ACTION_UP);
+
+        if (grid[x][y+1].get(0).getType() == ObservationType.WALL
+                || grid[x][y+1].get(0).getType() == ObservationType.EMPTY
+                || grid[x][y+1].get(0).getType() == ObservationType.GEM)
+        posibles_acciones.add(Types.ACTIONS.ACTION_DOWN);
 
         boolean peligro = false;
 
