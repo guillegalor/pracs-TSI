@@ -66,9 +66,12 @@ public class Agent extends BaseAgent {
 
     @Override
     public Types.ACTIONS act(StateObservation stateObs, ElapsedCpuTimer elapsedTimer){
+
         // Obtenemos la posicion del avatar
         Vector2d avatar =  new Vector2d(stateObs.getAvatarPosition().x / fescala.x,
                 stateObs.getAvatarPosition().y / fescala.y);
+        // Nodo con la posición del avatar
+        Node avatar_node = new Node(avatar);
 
         // DEBUG
         System.out.println("\n---------------------");
@@ -168,8 +171,6 @@ public class Agent extends BaseAgent {
             // DEBUG
             System.out.print("\nRecalculando caminos ---------------");
 
-            Node avatar_node = new Node(avatar);
-
             //Si ya tiene todas las gemas se calcula uno al portal mas cercano. Si no se calcula a la gema mas cercana
             if(nGemas == 10){
                 // Actualizamos el grid que contiene el pathfinder
@@ -212,7 +213,9 @@ public class Agent extends BaseAgent {
 
                     gema.x = gema.x / fescala.x;
                     gema.y = gema.y / fescala.y;
-                    path = pf.getPath(avatar, gema);
+                    Node gema_node = new Node(gema);
+
+                    path = pf.astar._findPath(avatar_node, gema_node);
 
                     if(path != null)
                         path_lengths.add(path.size());
@@ -311,6 +314,7 @@ public class Agent extends BaseAgent {
             //Si la siguiente accion es peligrosa la cambia sino la deja tal cual
             Types.ACTIONS aux_accion = esPeligrosa(stateObs, siguienteaccion);
             if (aux_accion != siguienteaccion) {
+                System.out.println("Cambia la accion");
                 siguienteaccion = aux_accion;
                 actualizarmapa = true;
             }
@@ -343,22 +347,22 @@ public class Agent extends BaseAgent {
         int x = (int) (posicion.x / fescala.x);
         int y = (int) (posicion.y / fescala.y);
 
-        if (grid[x-1][y].get(0).getType() == ObservationType.WALL
+        if (grid[x-1][y].get(0).getType() == ObservationType.GROUND
                 || grid[x-1][y].get(0).getType() == ObservationType.EMPTY
                 || grid[x-1][y].get(0).getType() == ObservationType.GEM)
             posibles_acciones.add(Types.ACTIONS.ACTION_LEFT);
 
-        if (grid[x+1][y].get(0).getType() == ObservationType.WALL
+        if (grid[x+1][y].get(0).getType() == ObservationType.GROUND
                 || grid[x+1][y].get(0).getType() == ObservationType.EMPTY
                 || grid[x+1][y].get(0).getType() == ObservationType.GEM)
         posibles_acciones.add(Types.ACTIONS.ACTION_RIGHT);
 
-        if (grid[x][y-1].get(0).getType() == ObservationType.WALL
+        if (grid[x][y-1].get(0).getType() == ObservationType.GROUND
                 || grid[x][y-1].get(0).getType() == ObservationType.EMPTY
                 || grid[x][y-1].get(0).getType() == ObservationType.GEM)
         posibles_acciones.add(Types.ACTIONS.ACTION_UP);
 
-        if (grid[x][y+1].get(0).getType() == ObservationType.WALL
+        if (grid[x][y+1].get(0).getType() == ObservationType.GROUND
                 || grid[x][y+1].get(0).getType() == ObservationType.EMPTY
                 || grid[x][y+1].get(0).getType() == ObservationType.GEM)
         posibles_acciones.add(Types.ACTIONS.ACTION_DOWN);
