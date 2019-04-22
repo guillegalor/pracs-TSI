@@ -298,7 +298,7 @@ public class Agent extends BaseAgent {
             // Baja la velocidad para poder ver sus movimientos
             //DEBUG
             try{
-                Thread.sleep(50);
+                Thread.sleep(100);
             }
             catch(Exception e){}
 
@@ -316,72 +316,32 @@ public class Agent extends BaseAgent {
 
     private Types.ACTIONS esPeligrosa(StateObservation stateObs, Types.ACTIONS siguienteaccion){
 
-        // Array con todas las posibles acciones
+        // Array con las posibles acciones
         ArrayList<Types.ACTIONS> posibles_acciones = new ArrayList();
-        for (int i = 0; i < Types.ACTIONS.values().length; i++){
-            posibles_acciones.add(Types.ACTIONS.values()[i]);
-        }
+        posibles_acciones.add(Types.ACTIONS.ACTION_LEFT);
+        posibles_acciones.add(Types.ACTIONS.ACTION_RIGHT);
+        posibles_acciones.add(Types.ACTIONS.ACTION_DOWN);
+        posibles_acciones.add(Types.ACTIONS.ACTION_UP);
 
-        Boolean peligro = false;
+        boolean peligro = false;
 
         StateObservation aux_stateobs = stateObs.copy();
         aux_stateobs.advance(siguienteaccion);
 
-        // DEBUG
-        System.out.println("\nSe muere en la siguiente?");
-        System.out.println(Boolean.toString(!aux_stateobs.isAvatarAlive()));
-
-        peligro = !aux_stateobs.isAvatarAlive();
-
-        // Comprobamos que no entra en una situación en la que siempre muere
-        if(!peligro){
-            boolean muere_siempre = true;
-            int ind = 0;
-            Types.ACTIONS accion_futura;
-
-            do {
-                accion_futura = Types.ACTIONS.values()[ind];
-                aux_stateobs = stateObs.copy();
-                aux_stateobs.advance(siguienteaccion);
-                aux_stateobs.advance(accion_futura);
-                ind += 1;
-            } while (!aux_stateobs.isAvatarAlive() && ind < Types.ACTIONS.values().length);
-
-            if (aux_stateobs.isAvatarAlive()){
-                muere_siempre = false;
-            }
-
-            if (!muere_siempre)
-                return siguienteaccion;
-            else
-                posibles_acciones.remove(siguienteaccion);
+        // Comprobamos si se muere en la siguiente acción
+        if( !muere(stateObs, siguienteaccion) && !peligroPorMonstruos(stateObs, siguienteaccion)){
+            return siguienteaccion;
         }
+        else
+            posibles_acciones.remove(siguienteaccion);
 
+        // Buscamos una acción en la que no se muera
         for (Types.ACTIONS accion_candidata : posibles_acciones){
-            // Comprobamos que no entra en una situación en la que siempre muere
-            if (aux_stateobs.isAvatarAlive()){
-                boolean muere_siempre = true;
-                int ind = 0;
-                Types.ACTIONS accion_futura;
-
-                do {
-                    accion_futura = Types.ACTIONS.values()[ind];
-                    aux_stateobs = stateObs.copy();
-                    aux_stateobs.advance(accion_candidata);
-                    aux_stateobs.advance(accion_futura);
-                    ind += 1;
-                } while (!aux_stateobs.isAvatarAlive() && ind < Types.ACTIONS.values().length);
-
-                if (aux_stateobs.isAvatarAlive()){
-                    muere_siempre = false;
-                }
-
-                if (!muere_siempre)
-                    return accion_candidata;
-            }
+            if (!muere(stateObs, accion_candidata) && !peligroPorMonstruos(stateObs, accion_candidata))
+                return accion_candidata;
         }
 
-        System.out.print("Se va a morir");
+        System.out.print("Ninguna acción es segura y es segura respecto a los monstruos");
         return Types.ACTIONS.ACTION_NIL;
     }
 
@@ -421,26 +381,51 @@ public class Agent extends BaseAgent {
          */
         Boolean peligro_bichos;
 
-        StateObservation futureStateObs = stateObs.copy();
-        futureStateObs.advance(siguienteaccion);
-
-        Vector2d posicion = futureStateObs.getAvatarPosition();
+        Vector2d posicion = stateObs.getAvatarPosition();
         int x = (int) (posicion.x / fescala.x);
         int y = (int) (posicion.y / fescala.y);
 
+        switch (siguienteaccion) {
+            case ACTION_UP:
+                y = y-1;
+                break;
+            case ACTION_DOWN:
+                y = y+1;
+                break;
+            case ACTION_LEFT:
+                x = x-1;
+                break;
+            case ACTION_RIGHT:
+                x = x+1;
+                break;
+        }
+
         ArrayList<ObservationType> observaciones = new ArrayList();
-        observaciones.add(grid[x   ][y -2].get(0).getType());     // 0
-        observaciones.add(grid[x -1][y -1].get(0).getType());     // 1
-        observaciones.add(grid[x   ][y -1].get(0).getType());     // 2
-        observaciones.add(grid[x +1][y -1].get(0).getType());     // 3
-        observaciones.add(grid[x -2][ y  ].get(0).getType());     // 4
-        observaciones.add(grid[x -1][ y  ].get(0).getType());     // 5
-        observaciones.add(grid[x +1][ y  ].get(0).getType());     // 6
-        observaciones.add(grid[x +2][ y  ].get(0).getType());     // 7
-        observaciones.add(grid[x -1][y +1].get(0).getType());     // 8
-        observaciones.add(grid[x   ][y +1].get(0).getType());     // 9
-        observaciones.add(grid[x +1][y +1].get(0).getType());     // 10
-        observaciones.add(grid[x   ][y +2].get(0).getType());     // 11
+
+        if (y-2 >= 0)
+            observaciones.add(grid[x   ][y -2].get(0).getType());   // 0
+        else
+            observaciones.add(ObservationType.EMPTY);
+        observaciones.add(grid[x -1][y -1].get(0).getType());       // 1
+        observaciones.add(grid[x   ][y -1].get(0).getType());       // 2
+        observaciones.add(grid[x +1][y -1].get(0).getType());       // 3
+        if (x-2 >= 0)
+            observaciones.add(grid[x -2][ y  ].get(0).getType());   // 4
+        else
+            observaciones.add(ObservationType.EMPTY);
+        observaciones.add(grid[x -1][ y  ].get(0).getType());       // 5
+        observaciones.add(grid[x +1][ y  ].get(0).getType());       // 6
+        if (x+2 < grid.length)
+            observaciones.add(grid[x +2][ y  ].get(0).getType());   // 7
+        else
+            observaciones.add(ObservationType.EMPTY);
+        observaciones.add(grid[x -1][y +1].get(0).getType());       // 8
+        observaciones.add(grid[x   ][y +1].get(0).getType());       // 9
+        observaciones.add(grid[x +1][y +1].get(0).getType());       // 10
+        if (y+2 < grid[0].length)
+            observaciones.add(grid[x   ][y +2].get(0).getType());   // 11
+        else
+            observaciones.add(ObservationType.EMPTY);
 
         // Comprueba la cruz alrededor de la siguiente posición
         if ((observaciones.get(2) == ObservationType.BAT) || (observaciones.get(2) == ObservationType.SCORPION)) {
@@ -457,46 +442,45 @@ public class Agent extends BaseAgent {
         }
 
         // Comprueba esquinas
-        if ((observaciones.get( 1 ) == ObservationType.BAT) || (observaciones.get( 1 ) == ObservationType.SCORPION)
-                &&  (observaciones.get( 2 ) == ObservationType.EMPTY || observaciones.get( 5 ) == ObservationType.EMPTY) ) {
+        if (((observaciones.get( 1 ) == ObservationType.BAT) || (observaciones.get( 1 ) == ObservationType.SCORPION))
+                &&  ((observaciones.get( 2 ) == ObservationType.EMPTY || observaciones.get( 5 ) == ObservationType.EMPTY))) {
             return true;
-        }
+                }
+        if (((observaciones.get( 3 ) == ObservationType.BAT) || (observaciones.get( 3 ) == ObservationType.SCORPION))
+                &&  ((observaciones.get( 2 ) == ObservationType.EMPTY || observaciones.get( 6 ) == ObservationType.EMPTY))) {
+            return true;
+                }
 
-        if ((observaciones.get( 3 ) == ObservationType.BAT) || (observaciones.get( 3 ) == ObservationType.SCORPION)
-                &&  (observaciones.get( 2 ) == ObservationType.EMPTY || observaciones.get( 6 ) == ObservationType.EMPTY) ) {
+        if (((observaciones.get( 10 ) == ObservationType.BAT) || (observaciones.get( 10 ) == ObservationType.SCORPION))
+                &&  ((observaciones.get( 9 ) == ObservationType.EMPTY || observaciones.get( 6 ) == ObservationType.EMPTY))) {
             return true;
-        }
+                }
 
-        if ((observaciones.get( 10 ) == ObservationType.BAT) || (observaciones.get( 10 ) == ObservationType.SCORPION)
-                &&  (observaciones.get( 9 ) == ObservationType.EMPTY || observaciones.get( 6 ) == ObservationType.EMPTY) ) {
+        if (((observaciones.get( 8 ) == ObservationType.BAT) || (observaciones.get( 8 ) == ObservationType.SCORPION))
+                &&  ((observaciones.get( 9 ) == ObservationType.EMPTY || observaciones.get( 5 ) == ObservationType.EMPTY))) {
             return true;
-        }
-
-        if ((observaciones.get( 8 ) == ObservationType.BAT) || (observaciones.get( 8 ) == ObservationType.SCORPION)
-                &&  (observaciones.get( 9 ) == ObservationType.EMPTY || observaciones.get( 5 ) == ObservationType.EMPTY) ) {
-            return true;
-        }
+                }
 
         // Comprueba la cruz a distancia 2
-        if ((observaciones.get( 0 ) == ObservationType.BAT) || (observaciones.get( 0 ) == ObservationType.SCORPION)
+        if (((observaciones.get( 0 ) == ObservationType.BAT) || (observaciones.get( 0 ) == ObservationType.SCORPION))
                 &&  (observaciones.get( 2 ) == ObservationType.EMPTY) ) {
             return true;
-        }
+                }
 
-        if ((observaciones.get( 4 ) == ObservationType.BAT) || (observaciones.get( 4 ) == ObservationType.SCORPION)
+        if (((observaciones.get( 4 ) == ObservationType.BAT) || (observaciones.get( 4 ) == ObservationType.SCORPION))
                 &&  (observaciones.get( 5 ) == ObservationType.EMPTY) ) {
             return true;
-        }
+                }
 
-        if ((observaciones.get( 7 ) == ObservationType.BAT) || (observaciones.get( 7 ) == ObservationType.SCORPION)
+        if (((observaciones.get( 7 ) == ObservationType.BAT) || (observaciones.get( 7 ) == ObservationType.SCORPION))
                 &&  (observaciones.get( 6 ) == ObservationType.EMPTY) ) {
             return true;
-        }
+                }
 
-        if ((observaciones.get( 11 ) == ObservationType.BAT) || (observaciones.get( 11 ) == ObservationType.SCORPION)
+        if (((observaciones.get( 11 ) == ObservationType.BAT) || (observaciones.get( 11 ) == ObservationType.SCORPION))
                 &&  (observaciones.get( 9 ) == ObservationType.EMPTY) ) {
             return true;
-        }
+                }
 
         return false;
     }
