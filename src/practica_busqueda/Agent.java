@@ -196,12 +196,52 @@ public class Agent extends BaseAgent {
             }
             else{
 
+<<<<<<< HEAD
+            System.out.print("\nRocas movibles: " + Integer.toString(pos_debajo_rocas.size()));
+            System.out.print("\nnRocas: " + Integer.toString(nRocas));
+
+            if(pos_debajo_rocas.size() > nRocas){
+                Vector2d pos = pos_debajo_rocas.get(nRocas);
+
+                System.out.print("Pos x rocas: " + Double.toString(pos.x ));
+                System.out.print("Pos y rocas: " + Double.toString(pos.y));
+
+                Node roca_node = new Node(pos);
+                Node avatar_node = new Node(avatar);
+
+                if(path == null){
+                  System.out.print("\nPues el path de las rocas es nuuuuuuuuuul");
+                  nRocas ++;
+                }
+
+                //DEBUG
+                ArrayList<Observation>[][] grid2 = stateObs.getObservationGrid();
+
+                pf.state = stateObs.copy();
+                pf.grid = stateObs.getObservationGrid();
+
+                System.out.println(grid2.length);
+                System.out.println(grid2[0].length);
+                for(int i = 0; i < grid2.length; ++i){
+                    System.out.print("\n");
+                    for(int j = 0; j < grid2[i].length; ++j){
+                        if(!grid2[i][j].isEmpty())
+                          System.out.print(Integer.toString(grid2[i][j].get(0).itype) + "\t");
+                        else
+                          System.out.print("," + "\t");
+                        }
+                    }
+
+                }
+
+=======
                 // Actualizamos el grid que contiene el pathfinder
                 pf.state = stateObs.copy();
                 pf.grid = stateObs.getObservationGrid();
 
                 Boolean hay_path = false;
                 int gema_objetivo = 0;
+>>>>>>> 19e0d2bbc90d493de2a713cb6c70b9ecfe9e2996
 
                 //Se crea una lista de observaciones, ordenada por cercania al avatar
                 ArrayList<Observation> posiciones_gemas = stateObs.getResourcesPositions(stateObs.getAvatarPosition())[0];
