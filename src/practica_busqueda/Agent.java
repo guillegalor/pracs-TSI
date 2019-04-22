@@ -177,365 +177,366 @@ public class Agent extends BaseAgent {
                 }
 
             }
-
-            //Si no hay un plan de ruta calculado...
-            if(actualizarmapa && !objetivo_rocas){
-                actualizarmapa = false;
-                // DEBUG
-                System.out.print("\nRecalculando caminos ---------------");
-
-                Node avatar_node = new Node(avatar);
-
-                //Si ya tiene todas las gemas se calcula uno al portal mas cercano. Si no se calcula a la gema mas cercana
-                if(nGemas == 10){
-                    // Actualizamos el grid que contiene el pathfinder
-                    pf_10_gemas.state = stateObs.copy();
-                    pf_10_gemas.grid = stateObs.getObservationGrid();
-
-                    Vector2d portal;
-
-                    //Se crea una lista de observaciones de portales, ordenada por cercania al avatar
-                    ArrayList<Observation>[] posiciones = stateObs.getPortalsPositions(stateObs.getAvatarPosition());
-
-                    //Se seleccionan el portal mas cercano
-                    portal = posiciones[0].get(0).position;
-
-                    //Se le aplica el factor de escala para que las coordenas de pixel coincidan con las coordenadas del grid
-                    portal.x = portal.x / fescala.x;
-                    portal.y = portal.y / fescala.y;
-
-                    Node portal_node = new Node(portal);
-
-                    //Calculamos un camino desde la posicion del avatar a la posicion del portal
-                    path = pf_10_gemas.astar._findPath(avatar_node, portal_node);
-                }
-                else{
-
-                    // Actualizamos el grid que contiene el pathfinder
-                    pf.state = stateObs.copy();
-                    pf.grid = stateObs.getObservationGrid();
-
-                    Boolean hay_path = false;
-                    int gema_objetivo = 0;
-
-                    //Se crea una lista de observaciones, ordenada por cercania al avatar
-                    ArrayList<Observation> posiciones_gemas = stateObs.getResourcesPositions(stateObs.getAvatarPosition())[0];
-                    ArrayList<Integer> path_lengths = new ArrayList(posiciones_gemas.size());
-
-                    // Almacenamos la longitud de cada camino
-                    for (Observation obs : posiciones_gemas) {
-                        Vector2d gema = obs.position.copy();
-
-                        gema.x = gema.x / fescala.x;
-                        gema.y = gema.y / fescala.y;
-                        path = pf.getPath(avatar, gema);
-
-                        if(path != null)
-                            path_lengths.add(path.size());
-                        else
-                            path_lengths.add(Integer.MAX_VALUE);
-                    }
-
-                    // Ordena las gemas por longitud menor del camino
-                    int n = path_lengths.size();
-                    for (int j = 1; j < n; j++) {
-                        int l_key = path_lengths.get(j);
-                        Observation o_key = posiciones_gemas.get(j);
-                        int i = j-1;
-                        while ( (i > -1) && ( path_lengths.get(i) > l_key ) ) {
-                            posiciones_gemas.set(i+1, posiciones_gemas.get(i));
-                            path_lengths.set(i+1, path_lengths.get(i));
-                            i--;
-                        }
-                        posiciones_gemas.set(i+1, o_key);
-                        path_lengths.set(i+1, l_key);
-                    }
-
-                    while (!hay_path && gema_objetivo < posiciones_gemas.size()){
-                        Vector2d gema;
-
-                        //Se selecciona la gema mas cercana
-                        gema = posiciones_gemas.get(gema_objetivo).position;
-
-                        //Se le aplica el factor de escala para que las coordenas de pixel coincidan con las coordenadas del grig
-                        gema.x = gema.x / fescala.x;
-                        gema.y = gema.y / fescala.y;
-
-                        Node gema_node = new Node(gema);
-
-                        // DEBUG
-                        System.out.print("\nGema siguiente:");
-
-                        System.out.print(Double.toString(gema.x) + ", ");
-                        System.out.print(Double.toString(gema.y) + "\n");
-
-                        //Calculamos un camino desde la posicion del avatar a la posicion de la gema
-                        path = pf.astar._findPath(avatar_node, gema_node);
-
-                        //Comprobamos si hay camino a dicha gema
-                        hay_path = (path != null) && (!path.isEmpty());
-
-                        // DEBUG
-                        System.out.println("\nHay camino a la gema " + Integer.toString(gema_objetivo) + "? " + Boolean.toString(hay_path));
-
-                        if (!hay_path) gema_objetivo++;
-                    }
-                }
-            }
-
-            if(path == null){
-                actualizarmapa = true;
-                Types.ACTIONS siguienteaccion = Types.ACTIONS.ACTION_NIL;
-                ticks_sin_caminos ++;
-
-                //DEBUG
-                System.out.print("\nPath es null.");
-
-                //Si la siguiente accion es peligrosa la cambia sino la deja tal cual
-                siguienteaccion = esPeligrosa(stateObs, siguienteaccion);
-
-                return siguienteaccion;
-            }
-
-            if(!path.isEmpty()){
-                Types.ACTIONS siguienteaccion;
-                Node siguientePos = path.get(0);
-
-                //Se determina el siguiente movimiento a partir de la posicion del avatar
-                if(siguientePos.position.x != avatar.x){
-                    if (siguientePos.position.x > avatar.x) {
-                        siguienteaccion = Types.ACTIONS.ACTION_RIGHT;
-                    } else {
-                        siguienteaccion = Types.ACTIONS.ACTION_LEFT;
-                    }
-                }else{
-                    if (siguientePos.position.y > avatar.y){
-                        siguienteaccion = Types.ACTIONS.ACTION_DOWN;
-                    } else {
-                        siguienteaccion = Types.ACTIONS.ACTION_UP;
-                    }
-                }
-
-                //Se actualiza la ultima posicion del avatar
-                ultimaPos = avatar;
-
-                // DEBUG Muestra siguiente acción, posición actual, etc
-                System.out.print("\nSiguiente posicion:");
-                System.out.print(Double.toString(siguientePos.position.x) + ", ");
-                System.out.print(Double.toString(siguientePos.position.y) + "\n");
-
-                //Si la siguiente accion es peligrosa la cambia sino la deja tal cual
-                Types.ACTIONS aux_accion = esPeligrosa(stateObs, siguienteaccion);
-                if (aux_accion != siguienteaccion) {
-                    siguienteaccion = aux_accion;
-                    actualizarmapa = true;
-                }
-
-                // Baja la velocidad para poder ver sus movimientos
-                //DEBUG
-                try{
-                    Thread.sleep(100);
-                }
-                catch(Exception e){}
-
-                //DEBUG
-                System.out.print(siguienteaccion.toString());
-                //Se devuelve la accion deseada
-                return siguienteaccion;
-            }
-            else{
-                //Salida por defecto
-                return Types.ACTIONS.ACTION_NIL;
-            }
-
         }
 
-        private Types.ACTIONS esPeligrosa(StateObservation stateObs, Types.ACTIONS siguienteaccion){
+        //Si no hay un plan de ruta calculado...
+        if(actualizarmapa && !objetivo_rocas){
+            actualizarmapa = false;
+            // DEBUG
+            System.out.print("\nRecalculando caminos ---------------");
 
-            // Array con las posibles acciones
-            ArrayList<Types.ACTIONS> posibles_acciones = new ArrayList();
-            posibles_acciones.add(Types.ACTIONS.ACTION_LEFT);
-            posibles_acciones.add(Types.ACTIONS.ACTION_RIGHT);
-            posibles_acciones.add(Types.ACTIONS.ACTION_DOWN);
-            posibles_acciones.add(Types.ACTIONS.ACTION_UP);
+            Node avatar_node = new Node(avatar);
 
-            boolean peligro = false;
+            //Si ya tiene todas las gemas se calcula uno al portal mas cercano. Si no se calcula a la gema mas cercana
+            if(nGemas == 10){
+                // Actualizamos el grid que contiene el pathfinder
+                pf_10_gemas.state = stateObs.copy();
+                pf_10_gemas.grid = stateObs.getObservationGrid();
 
-            StateObservation aux_stateobs = stateObs.copy();
-            aux_stateobs.advance(siguienteaccion);
+                Vector2d portal;
 
-            // Comprobamos si se muere en la siguiente acción
-            if( !muere(stateObs, siguienteaccion) && !peligroPorMonstruos(stateObs, siguienteaccion)){
-                return siguienteaccion;
+                //Se crea una lista de observaciones de portales, ordenada por cercania al avatar
+                ArrayList<Observation>[] posiciones = stateObs.getPortalsPositions(stateObs.getAvatarPosition());
+
+                //Se seleccionan el portal mas cercano
+                portal = posiciones[0].get(0).position;
+
+                //Se le aplica el factor de escala para que las coordenas de pixel coincidan con las coordenadas del grid
+                portal.x = portal.x / fescala.x;
+                portal.y = portal.y / fescala.y;
+
+                Node portal_node = new Node(portal);
+
+                //Calculamos un camino desde la posicion del avatar a la posicion del portal
+                path = pf_10_gemas.astar._findPath(avatar_node, portal_node);
             }
-            else
-                posibles_acciones.remove(siguienteaccion);
+            else{
 
-            // Buscamos una acción en la que no se muera
-            for (Types.ACTIONS accion_candidata : posibles_acciones){
-                if (!muere(stateObs, accion_candidata) && !peligroPorMonstruos(stateObs, accion_candidata))
-                    return accion_candidata;
+                // Actualizamos el grid que contiene el pathfinder
+                pf.state = stateObs.copy();
+                pf.grid = stateObs.getObservationGrid();
+
+                Boolean hay_path = false;
+                int gema_objetivo = 0;
+
+                //Se crea una lista de observaciones, ordenada por cercania al avatar
+                ArrayList<Observation> posiciones_gemas = stateObs.getResourcesPositions(stateObs.getAvatarPosition())[0];
+                ArrayList<Integer> path_lengths = new ArrayList(posiciones_gemas.size());
+
+                // Almacenamos la longitud de cada camino
+                for (Observation obs : posiciones_gemas) {
+                    Vector2d gema = obs.position.copy();
+
+                    gema.x = gema.x / fescala.x;
+                    gema.y = gema.y / fescala.y;
+                    path = pf.getPath(avatar, gema);
+
+                    if(path != null)
+                        path_lengths.add(path.size());
+                    else
+                        path_lengths.add(Integer.MAX_VALUE);
+                }
+
+                // Ordena las gemas por longitud menor del camino
+                int n = path_lengths.size();
+                for (int j = 1; j < n; j++) {
+                    int l_key = path_lengths.get(j);
+                    Observation o_key = posiciones_gemas.get(j);
+                    int i = j-1;
+                    while ( (i > -1) && ( path_lengths.get(i) > l_key ) ) {
+                        posiciones_gemas.set(i+1, posiciones_gemas.get(i));
+                        path_lengths.set(i+1, path_lengths.get(i));
+                        i--;
+                    }
+                    posiciones_gemas.set(i+1, o_key);
+                    path_lengths.set(i+1, l_key);
+                }
+
+                while (!hay_path && gema_objetivo < posiciones_gemas.size()){
+                    Vector2d gema;
+
+                    //Se selecciona la gema mas cercana
+                    gema = posiciones_gemas.get(gema_objetivo).position;
+
+                    //Se le aplica el factor de escala para que las coordenas de pixel coincidan con las coordenadas del grig
+                    gema.x = gema.x / fescala.x;
+                    gema.y = gema.y / fescala.y;
+
+                    Node gema_node = new Node(gema);
+
+                    // DEBUG
+                    System.out.print("\nGema siguiente:");
+
+                    System.out.print(Double.toString(gema.x) + ", ");
+                    System.out.print(Double.toString(gema.y) + "\n");
+
+                    //Calculamos un camino desde la posicion del avatar a la posicion de la gema
+                    path = pf.astar._findPath(avatar_node, gema_node);
+
+                    //Comprobamos si hay camino a dicha gema
+                    hay_path = (path != null) && (!path.isEmpty());
+
+                    // DEBUG
+                    System.out.println("\nHay camino a la gema " + Integer.toString(gema_objetivo) + "? " + Boolean.toString(hay_path));
+
+                    if (!hay_path) gema_objetivo++;
+                }
+            }
+        }
+
+        if(path == null){
+            actualizarmapa = true;
+            Types.ACTIONS siguienteaccion = Types.ACTIONS.ACTION_NIL;
+            ticks_sin_caminos ++;
+
+            //DEBUG
+            System.out.print("\nPath es null.");
+
+            //Si la siguiente accion es peligrosa la cambia sino la deja tal cual
+            siguienteaccion = esPeligrosa(stateObs, siguienteaccion);
+
+            return siguienteaccion;
+        }
+
+        if(!path.isEmpty()){
+            Types.ACTIONS siguienteaccion;
+            Node siguientePos = path.get(0);
+
+            //Se determina el siguiente movimiento a partir de la posicion del avatar
+            if(siguientePos.position.x != avatar.x){
+                if (siguientePos.position.x > avatar.x) {
+                    siguienteaccion = Types.ACTIONS.ACTION_RIGHT;
+                } else {
+                    siguienteaccion = Types.ACTIONS.ACTION_LEFT;
+                }
+            }else{
+                if (siguientePos.position.y > avatar.y){
+                    siguienteaccion = Types.ACTIONS.ACTION_DOWN;
+                } else {
+                    siguienteaccion = Types.ACTIONS.ACTION_UP;
+                }
             }
 
-            System.out.print("Ninguna acción es segura y es segura respecto a los monstruos");
+            //Se actualiza la ultima posicion del avatar
+            ultimaPos = avatar;
+
+            // DEBUG Muestra siguiente acción, posición actual, etc
+            System.out.print("\nSiguiente posicion:");
+            System.out.print(Double.toString(siguientePos.position.x) + ", ");
+            System.out.print(Double.toString(siguientePos.position.y) + "\n");
+
+            //Si la siguiente accion es peligrosa la cambia sino la deja tal cual
+            Types.ACTIONS aux_accion = esPeligrosa(stateObs, siguienteaccion);
+            if (aux_accion != siguienteaccion) {
+                siguienteaccion = aux_accion;
+                actualizarmapa = true;
+            }
+
+            // Baja la velocidad para poder ver sus movimientos
+            //DEBUG
+            try{
+                Thread.sleep(100);
+            }
+            catch(Exception e){}
+
+            //DEBUG
+            System.out.print(siguienteaccion.toString());
+            //Se devuelve la accion deseada
+            return siguienteaccion;
+        }
+        else{
+            //Salida por defecto
             return Types.ACTIONS.ACTION_NIL;
         }
 
-        private Boolean muere(StateObservation stateObs, Types.ACTIONS siguienteaccion){
-            StateObservation aux_stateobs = stateObs.copy();
-            if (!aux_stateobs.isAvatarAlive())
-                return true;
-            else{
-                boolean muere_siempre = true;
-                int ind = 0;
-                Types.ACTIONS accion_futura;
+    }
 
-                do {
-                    accion_futura = Types.ACTIONS.values()[ind];
-                    aux_stateobs = stateObs.copy();
-                    aux_stateobs.advance(siguienteaccion);
-                    aux_stateobs.advance(accion_futura);
-                    ind += 1;
-                } while (!aux_stateobs.isAvatarAlive() && ind < Types.ACTIONS.values().length);
+    private Types.ACTIONS esPeligrosa(StateObservation stateObs, Types.ACTIONS siguienteaccion){
 
-                if (aux_stateobs.isAvatarAlive()){
-                    muere_siempre = false;
-                }
+        // Array con las posibles acciones
+        ArrayList<Types.ACTIONS> posibles_acciones = new ArrayList();
+        posibles_acciones.add(Types.ACTIONS.ACTION_LEFT);
+        posibles_acciones.add(Types.ACTIONS.ACTION_RIGHT);
+        posibles_acciones.add(Types.ACTIONS.ACTION_DOWN);
+        posibles_acciones.add(Types.ACTIONS.ACTION_UP);
 
-                return muere_siempre;
-            }
+        boolean peligro = false;
+
+        StateObservation aux_stateobs = stateObs.copy();
+        aux_stateobs.advance(siguienteaccion);
+
+        // Comprobamos si se muere en la siguiente acción
+        if( !muere(stateObs, siguienteaccion) && !peligroPorMonstruos(stateObs, siguienteaccion)){
+            return siguienteaccion;
+        }
+        else
+            posibles_acciones.remove(siguienteaccion);
+
+        // Buscamos una acción en la que no se muera
+        for (Types.ACTIONS accion_candidata : posibles_acciones){
+            if (!muere(stateObs, accion_candidata) && !peligroPorMonstruos(stateObs, accion_candidata))
+                return accion_candidata;
         }
 
-        private Boolean peligroPorMonstruos(StateObservation stateObs, Types.ACTIONS siguienteaccion){
-            /*
-             * Posiciones que almacena el vector
-             *       0
-             *    1  2  3
-             * 4  5  a  6 7
-             *    8  9 10
-             *      11
-             */
-            Boolean peligro_bichos;
+        System.out.print("Ninguna acción es segura y es segura respecto a los monstruos");
+        return Types.ACTIONS.ACTION_NIL;
+    }
 
-            Vector2d posicion = stateObs.getAvatarPosition();
-            int x = (int) (posicion.x / fescala.x);
-            int y = (int) (posicion.y / fescala.y);
+    private Boolean muere(StateObservation stateObs, Types.ACTIONS siguienteaccion){
+        StateObservation aux_stateobs = stateObs.copy();
+        if (!aux_stateobs.isAvatarAlive())
+            return true;
+        else{
+            boolean muere_siempre = true;
+            int ind = 0;
+            Types.ACTIONS accion_futura;
 
-            switch (siguienteaccion) {
-                case ACTION_UP:
-                    y = y-1;
-                    break;
-                case ACTION_DOWN:
-                    y = y+1;
-                    break;
-                case ACTION_LEFT:
-                    x = x-1;
-                    break;
-                case ACTION_RIGHT:
-                    x = x+1;
-                    break;
+            do {
+                accion_futura = Types.ACTIONS.values()[ind];
+                aux_stateobs = stateObs.copy();
+                aux_stateobs.advance(siguienteaccion);
+                aux_stateobs.advance(accion_futura);
+                ind += 1;
+            } while (!aux_stateobs.isAvatarAlive() && ind < Types.ACTIONS.values().length);
+
+            if (aux_stateobs.isAvatarAlive()){
+                muere_siempre = false;
             }
 
-            ArrayList<ObservationType> observaciones = new ArrayList();
-
-            if (y-2 >= 0)
-                observaciones.add(grid[x   ][y -2].get(0).getType());   // 0
-            else
-                observaciones.add(ObservationType.EMPTY);
-            observaciones.add(grid[x -1][y -1].get(0).getType());       // 1
-            observaciones.add(grid[x   ][y -1].get(0).getType());       // 2
-            observaciones.add(grid[x +1][y -1].get(0).getType());       // 3
-            if (x-2 >= 0)
-                observaciones.add(grid[x -2][ y  ].get(0).getType());   // 4
-            else
-                observaciones.add(ObservationType.EMPTY);
-            observaciones.add(grid[x -1][ y  ].get(0).getType());       // 5
-            observaciones.add(grid[x +1][ y  ].get(0).getType());       // 6
-            if (x+2 < grid.length)
-                observaciones.add(grid[x +2][ y  ].get(0).getType());   // 7
-            else
-                observaciones.add(ObservationType.EMPTY);
-            observaciones.add(grid[x -1][y +1].get(0).getType());       // 8
-            observaciones.add(grid[x   ][y +1].get(0).getType());       // 9
-            observaciones.add(grid[x +1][y +1].get(0).getType());       // 10
-            if (y+2 < grid[0].length)
-                observaciones.add(grid[x   ][y +2].get(0).getType());   // 11
-            else
-                observaciones.add(ObservationType.EMPTY);
-
-            // Comprueba la cruz alrededor de la siguiente posición
-            if ((observaciones.get(2) == ObservationType.BAT) || (observaciones.get(2) == ObservationType.SCORPION)) {
-                return true;
-            }
-            if ((observaciones.get(5) == ObservationType.BAT) || (observaciones.get(5) == ObservationType.SCORPION)) {
-                return true;
-            }
-            if ((observaciones.get(6) == ObservationType.BAT) || (observaciones.get(6) == ObservationType.SCORPION)) {
-                return true;
-            }
-            if ((observaciones.get(9) == ObservationType.BAT) || (observaciones.get(9) == ObservationType.SCORPION)) {
-                return true;
-            }
-
-            // Comprueba esquinas
-            if (((observaciones.get( 1 ) == ObservationType.BAT) || (observaciones.get( 1 ) == ObservationType.SCORPION))
-                    &&  ((observaciones.get( 2 ) == ObservationType.EMPTY || observaciones.get( 5 ) == ObservationType.EMPTY))) {
-                return true;
-                    }
-            if (((observaciones.get( 3 ) == ObservationType.BAT) || (observaciones.get( 3 ) == ObservationType.SCORPION))
-                    &&  ((observaciones.get( 2 ) == ObservationType.EMPTY || observaciones.get( 6 ) == ObservationType.EMPTY))) {
-                return true;
-                    }
-
-            if (((observaciones.get( 10 ) == ObservationType.BAT) || (observaciones.get( 10 ) == ObservationType.SCORPION))
-                    &&  ((observaciones.get( 9 ) == ObservationType.EMPTY || observaciones.get( 6 ) == ObservationType.EMPTY))) {
-                return true;
-                    }
-
-            if (((observaciones.get( 8 ) == ObservationType.BAT) || (observaciones.get( 8 ) == ObservationType.SCORPION))
-                    &&  ((observaciones.get( 9 ) == ObservationType.EMPTY || observaciones.get( 5 ) == ObservationType.EMPTY))) {
-                return true;
-                    }
-
-            // Comprueba la cruz a distancia 2
-            if (((observaciones.get( 0 ) == ObservationType.BAT) || (observaciones.get( 0 ) == ObservationType.SCORPION))
-                    &&  (observaciones.get( 2 ) == ObservationType.EMPTY) ) {
-                return true;
-                    }
-
-            if (((observaciones.get( 4 ) == ObservationType.BAT) || (observaciones.get( 4 ) == ObservationType.SCORPION))
-                    &&  (observaciones.get( 5 ) == ObservationType.EMPTY) ) {
-                return true;
-                    }
-
-            if (((observaciones.get( 7 ) == ObservationType.BAT) || (observaciones.get( 7 ) == ObservationType.SCORPION))
-                    &&  (observaciones.get( 6 ) == ObservationType.EMPTY) ) {
-                return true;
-                    }
-
-            if (((observaciones.get( 11 ) == ObservationType.BAT) || (observaciones.get( 11 ) == ObservationType.SCORPION))
-                    &&  (observaciones.get( 9 ) == ObservationType.EMPTY) ) {
-                return true;
-                    }
-
-            return false;
-        }
-
-        private void simularacciones(StateObservation stateObs){
-            //Obtenemos la lista de acciones disponible
-            ArrayList<Types.ACTIONS> acciones = stateObs.getAvailableActions();
-
-            //Guardamos la informacion sobre el estado inicial
-            StateObservation viejoEstado = stateObs;
-
-            for(Types.ACTIONS accion:acciones){
-                //avanzamos el estado tras aplicarle una accion
-                viejoEstado.advance(accion);
-
-                //viejoEstado.somethingsomething(parametros);  <- Hacemos lo que queramos con el estado avanzado
-
-                //Restauramos el estado para avanzarlo con otra de las acciones disponibles.
-                viejoEstado = stateObs;
-            }
+            return muere_siempre;
         }
     }
+
+    private Boolean peligroPorMonstruos(StateObservation stateObs, Types.ACTIONS siguienteaccion){
+        /*
+         * Posiciones que almacena el vector
+         *       0
+         *    1  2  3
+         * 4  5  a  6 7
+         *    8  9 10
+         *      11
+         */
+        Boolean peligro_bichos;
+
+        Vector2d posicion = stateObs.getAvatarPosition();
+        int x = (int) (posicion.x / fescala.x);
+        int y = (int) (posicion.y / fescala.y);
+
+        switch (siguienteaccion) {
+            case ACTION_UP:
+                y = y-1;
+                break;
+            case ACTION_DOWN:
+                y = y+1;
+                break;
+            case ACTION_LEFT:
+                x = x-1;
+                break;
+            case ACTION_RIGHT:
+                x = x+1;
+                break;
+        }
+
+        ArrayList<ObservationType> observaciones = new ArrayList();
+
+        if (y-2 >= 0)
+            observaciones.add(grid[x   ][y -2].get(0).getType());   // 0
+        else
+            observaciones.add(ObservationType.EMPTY);
+        observaciones.add(grid[x -1][y -1].get(0).getType());       // 1
+        observaciones.add(grid[x   ][y -1].get(0).getType());       // 2
+        observaciones.add(grid[x +1][y -1].get(0).getType());       // 3
+        if (x-2 >= 0)
+            observaciones.add(grid[x -2][ y  ].get(0).getType());   // 4
+        else
+            observaciones.add(ObservationType.EMPTY);
+        observaciones.add(grid[x -1][ y  ].get(0).getType());       // 5
+        observaciones.add(grid[x +1][ y  ].get(0).getType());       // 6
+        if (x+2 < grid.length)
+            observaciones.add(grid[x +2][ y  ].get(0).getType());   // 7
+        else
+            observaciones.add(ObservationType.EMPTY);
+        observaciones.add(grid[x -1][y +1].get(0).getType());       // 8
+        observaciones.add(grid[x   ][y +1].get(0).getType());       // 9
+        observaciones.add(grid[x +1][y +1].get(0).getType());       // 10
+        if (y+2 < grid[0].length)
+            observaciones.add(grid[x   ][y +2].get(0).getType());   // 11
+        else
+            observaciones.add(ObservationType.EMPTY);
+
+        // Comprueba la cruz alrededor de la siguiente posición
+        if ((observaciones.get(2) == ObservationType.BAT) || (observaciones.get(2) == ObservationType.SCORPION)) {
+            return true;
+        }
+        if ((observaciones.get(5) == ObservationType.BAT) || (observaciones.get(5) == ObservationType.SCORPION)) {
+            return true;
+        }
+        if ((observaciones.get(6) == ObservationType.BAT) || (observaciones.get(6) == ObservationType.SCORPION)) {
+            return true;
+        }
+        if ((observaciones.get(9) == ObservationType.BAT) || (observaciones.get(9) == ObservationType.SCORPION)) {
+            return true;
+        }
+
+        // Comprueba esquinas
+        if (((observaciones.get( 1 ) == ObservationType.BAT) || (observaciones.get( 1 ) == ObservationType.SCORPION))
+                &&  ((observaciones.get( 2 ) == ObservationType.EMPTY || observaciones.get( 5 ) == ObservationType.EMPTY))) {
+            return true;
+                }
+        if (((observaciones.get( 3 ) == ObservationType.BAT) || (observaciones.get( 3 ) == ObservationType.SCORPION))
+                &&  ((observaciones.get( 2 ) == ObservationType.EMPTY || observaciones.get( 6 ) == ObservationType.EMPTY))) {
+            return true;
+                }
+
+        if (((observaciones.get( 10 ) == ObservationType.BAT) || (observaciones.get( 10 ) == ObservationType.SCORPION))
+                &&  ((observaciones.get( 9 ) == ObservationType.EMPTY || observaciones.get( 6 ) == ObservationType.EMPTY))) {
+            return true;
+                }
+
+        if (((observaciones.get( 8 ) == ObservationType.BAT) || (observaciones.get( 8 ) == ObservationType.SCORPION))
+                &&  ((observaciones.get( 9 ) == ObservationType.EMPTY || observaciones.get( 5 ) == ObservationType.EMPTY))) {
+            return true;
+                }
+
+        // Comprueba la cruz a distancia 2
+        if (((observaciones.get( 0 ) == ObservationType.BAT) || (observaciones.get( 0 ) == ObservationType.SCORPION))
+                &&  (observaciones.get( 2 ) == ObservationType.EMPTY) ) {
+            return true;
+                }
+
+        if (((observaciones.get( 4 ) == ObservationType.BAT) || (observaciones.get( 4 ) == ObservationType.SCORPION))
+                &&  (observaciones.get( 5 ) == ObservationType.EMPTY) ) {
+            return true;
+                }
+
+        if (((observaciones.get( 7 ) == ObservationType.BAT) || (observaciones.get( 7 ) == ObservationType.SCORPION))
+                &&  (observaciones.get( 6 ) == ObservationType.EMPTY) ) {
+            return true;
+                }
+
+        if (((observaciones.get( 11 ) == ObservationType.BAT) || (observaciones.get( 11 ) == ObservationType.SCORPION))
+                &&  (observaciones.get( 9 ) == ObservationType.EMPTY) ) {
+            return true;
+                }
+
+        return false;
+    }
+
+    private void simularacciones(StateObservation stateObs){
+        //Obtenemos la lista de acciones disponible
+        ArrayList<Types.ACTIONS> acciones = stateObs.getAvailableActions();
+
+        //Guardamos la informacion sobre el estado inicial
+        StateObservation viejoEstado = stateObs;
+
+        for(Types.ACTIONS accion:acciones){
+            //avanzamos el estado tras aplicarle una accion
+            viejoEstado.advance(accion);
+
+            //viejoEstado.somethingsomething(parametros);  <- Hacemos lo que queramos con el estado avanzado
+
+            //Restauramos el estado para avanzarlo con otra de las acciones disponibles.
+            viejoEstado = stateObs;
+        }
+    }
+}
