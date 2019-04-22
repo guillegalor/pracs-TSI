@@ -130,51 +130,36 @@ public class Agent extends BaseAgent {
             if(pos_debajo_rocas.size() > nRocas){
                 Vector2d pos = pos_debajo_rocas.get(nRocas);
 
-                //DEBUG
-                System.out.print("\nPos x rocas: " + Double.toString(pos.x));
-                System.out.print("\nPos y rocas: " + Double.toString(pos.y));
+                System.out.print("Pos x rocas: " + Double.toString(pos.x ));
+                System.out.print("Pos y rocas: " + Double.toString(pos.y));
 
-                for(Observation roca : posiciones_rocas){
-                    pos_debajo_rocas.add( new Vector2d( (int) (roca.position.x / stateObs.getBlockSize()), (int) (roca.position.y / stateObs.getBlockSize()) +1));
+                Node roca_node = new Node(pos);
+                Node avatar_node = new Node(avatar);
+
+                if(path == null){
+                  System.out.print("\nPues el path de las rocas es nuuuuuuuuuul");
+                  nRocas ++;
                 }
 
-                if(pos_debajo_rocas.size() > 0){
-                    Vector2d pos = pos_debajo_rocas.get(0);
-                    int x = (int) (pos.x /stateObs.getBlockSize());
-                    int y = (int) (pos.y /stateObs.getBlockSize());
+                //DEBUG
+                /*
+                pf.state = stateObs.copy();
+                pf.grid = stateObs.getObservationGrid();
 
-                    System.out.print("Pos x rocas: " + Integer.toString(x));
-                    System.out.print("Pos y rocas: " + Integer.toString(y));
-
-                    Node roca_node = new Node(pos);
-                    Node avatar_node = new Node(avatar);
-
-                    if(path == null){
-                        System.out.print("\nPues el path de las rocas es nuuuuuuuuuul");
-                        nRocas ++;
-                    }
-
-                    //DEBUG
-                    grid = stateObs.getObservationGrid();
-
-                    pf.state = stateObs.copy();
-                    pf.grid = grid;
-
-                    System.out.println(grid.length);
-                    System.out.println(grid[0].length);
-                    for(int i = 0; i < grid.length; ++i){
-                        System.out.print("\n");
-                        for(int j = 0; j < grid[i].length; ++j){
-                            if(!grid[i][j].isEmpty())
-                                System.out.print(Integer.toString(grid[i][j].get(0).itype) + "\t");
-                            else
-                                System.out.print("," + "\t");
+                System.out.println(grid.length);
+                System.out.println(grid[0].length);
+                for(int i = 0; i < grid.length; ++i){
+                    System.out.print("\n");
+                    for(int j = 0; j < grid[i].length; ++j){
+                        if(!grid[i][j].isEmpty())
+                          System.out.print(Integer.toString(grid[i][j].get(0).itype + "\t");
+                        else
+                          System.out.print("," + "\t");
                         }
                     }
-
-                    if(path == null) System.out.print("\nPues el path de las rocas es nuuuuuuuuuul");
-
+                    */
                 }
+
 
             }
         }
